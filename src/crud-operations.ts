@@ -145,8 +145,8 @@ export class CrudOperations<ID = number, ROW = any>
   //---------------------------------------------------------
   // InsertOperation
 
-  async insert(data: ROW): Promise<ROW> {
-    const now = Date.now();
+  async insert(data: ROW | Array<ROW>): Promise<ROW> {
+    const now = new Date();
     if (Array.isArray(data)) {
       for (const datum of data) {
         if (this.createdAtColumn) {
@@ -178,7 +178,7 @@ export class CrudOperations<ID = number, ROW = any>
 
   async updateById(id: ID, data: ROW): Promise<number> {
     if (this.updatedAtColumn) {
-      data[this.updatedAtColumn] = Date.now();
+      data[this.updatedAtColumn] = new Date();
     }
     return this.knex(this.table).where({ id }).update(data);
   }
