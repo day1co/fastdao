@@ -8,7 +8,7 @@ fast and simple crud using knex
 
 ```js
 // const = { connect, CrudOperations } = require('@fastcampus/fastdao');
-import { connect, CrudOperations } from '@fastdao/connection';
+import { connect, CrudOperations } from '@fastcampus/fastdao';
 
 const knex = connect({ ...  });
 const userCrud = CrudOperations.create({ knex, table: 'user' });
