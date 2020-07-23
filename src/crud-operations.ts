@@ -15,17 +15,12 @@ export interface CrudFilter<ID = number, ROW = any> {
   //state: any;
   min?: ID;
   max?: ID;
-  since?: Date | string | number;
-  until?: Date | string | number;
+  since?: Date | string;
+  until?: Date | string;
   offset?: number;
   limit?: number;
   /** @deprecated */
   projection?: Array<string>;
-}
-
-export interface CustomFilter<ID = number, ROW = any> {
-  // return truthy to break here(skip no built-in filter processing)!
-  (queryBuilder: Knex.QueryBuilder, filter?: CrudFilter<ID, ROW>): any;
 }
 
 export interface CrudOperationsOpts<ID = number, ROW = any> {
@@ -35,10 +30,7 @@ export interface CrudOperationsOpts<ID = number, ROW = any> {
   idColumn?: string;
   createdAtColumn?: string;
   updatedAtColumn?: string;
-  customFilter?: CustomFilter<ID, ROW>;
   weaver?: Weaver;
-  /** @deprecated */
-  safeDelete?: any;
 }
 
 export interface SelectOperations<ID = number, ROW = any> {
@@ -50,25 +42,16 @@ export interface SelectOperations<ID = number, ROW = any> {
 }
 
 export interface InsertOperations<ID = number, ROW = any> {
-  insert(data: ROW): Promise<ROW>;
-  //TODO: insertAll(data: Array<ROW>): Promise<ID>;
-  //TODO: insertAndReturn(data: ROW): Promise<ROW>;
-  //TODO: insertAllAndReturn(data: Array<ROW>): Promise<Array<ROW>>;
+  insert(data: ROW | Array<ROW>): Promise<ROW>;
 }
 
 export interface UpdateOperations<ID = number, ROW = any> {
   updateById(id: ID, data: ROW): Promise<number>;
-  //TODO: updateAll(filter: CrudFilter<ID, ROW>): Promise<void>;
 }
 
 export interface DeleteOperations<ID = number, ROW = any> {
   deleteById(id: ID): Promise<number>;
-  //TODO: deleteAll(filter: CrudFilter<ID, ROW>): Promise<ID>;
 }
-
-// TODO: export interface UpsertOperations<ID=number, U=any> {
-// upsert(data: ROW): Promise<ROW>;
-// }
 
 interface Transacting<ID = number, ROW = any> {
   transacting(tx: Knex.Transaction): CrudOperations<ID, ROW>;
@@ -91,10 +74,7 @@ export class CrudOperations<ID = number, ROW = any>
   private readonly idColumn: string;
   private readonly createdAtColumn: string;
   private readonly updatedAtColumn: string;
-  private readonly customFilter: CustomFilter<ID, ROW>;
   private readonly weaver?: Weaver;
-  /** @deprecated */
-  private readonly safeDelete?: any;
 
   private constructor(opts: CrudOperationsOpts<ID, ROW>) {
     // main connection for read/write
@@ -105,22 +85,20 @@ export class CrudOperations<ID = number, ROW = any>
     this.idColumn = opts.idColumn ?? 'id';
     this.createdAtColumn = opts.createdAtColumn ?? 'created_at';
     this.updatedAtColumn = opts.updatedAtColumn ?? 'updated_at';
-    this.customFilter = opts.customFilter;
     // for relations
     this.weaver = opts.weaver;
-    // for safe delete
-    this.safeDelete = opts.safeDelete || { state: 'DELETED' };
   }
 
   //---------------------------------------------------------
   // SelectOperation
 
   async select(filter?: CrudFilter<ID, ROW>, sorts?: Array<Sort>, relations?: Array<Relation>): Promise<Array<ROW>> {
-    const queryBuilder = this.queryBuilderWithFilter(filter);
-    if (sorts && sorts.length > 0) {
-      this.applySort(queryBuilder, sorts);
-    }
-    const rows = queryBuilder.select(filter?.projection);
+    const rows = this.knexReplica(this.table)
+      .modify((queryBuilder) => {
+        this.applyFilter(queryBuilder, filter);
+        this.applySort(queryBuilder, sorts);
+      })
+      .select(filter?.projection);
     if (relations && relations.length > 0) {
       return this.weaver.weave(await rows, relations);
     }
@@ -128,7 +106,11 @@ export class CrudOperations<ID = number, ROW = any>
   }
 
   async count(filter?: CrudFilter<ID, ROW>): Promise<number> {
-    const rows = await this.queryBuilderWithFilter(filter).count();
+    const rows = await this.knexReplica(this.table)
+      .modify((queryBuilder) => {
+        this.applyFilter(queryBuilder, filter);
+      })
+      .count();
     return rows[0]['count(*)'];
   }
 
@@ -146,30 +128,17 @@ export class CrudOperations<ID = number, ROW = any>
   // InsertOperation
 
   async insert(data: ROW | Array<ROW>): Promise<ROW> {
-    const now = new Date();
-    if (Array.isArray(data)) {
-      for (const datum of data) {
-        if (this.createdAtColumn) {
-          data[this.createdAtColumn] = now;
-        }
-        if (this.updatedAtColumn) {
-          data[this.updatedAtColumn] = now;
-        }
-      }
-    } else {
-      if (this.createdAtColumn) {
-        data[this.createdAtColumn] = now;
-      }
-      if (this.updatedAtColumn) {
-        data[this.updatedAtColumn] = now;
-      }
-    }
-    const [insertId] = await this.knex(this.table).insert(data);
+    // result is varying on dialect
+    // mysql: the first one, sqlite3: the last one, ...
+    // see http://knexjs.org/#Builder-insert
+    const [insertId] = await this.knex(this.table).insert(data, [this.idColumn]);
     // return just inserted row
     // use same data source to avoid replication delay
     return this.knex(this.table)
-      .where(this.idColumn, insertId > 0 ? insertId : data[this.idColumn])
-      .limit(1)
+      .where(
+        this.idColumn,
+        insertId > 0 ? insertId : Array.isArray(data) ? data[0][this.idColumn] : data[this.idColumn]
+      )
       .first();
   }
 
@@ -177,9 +146,6 @@ export class CrudOperations<ID = number, ROW = any>
   // UpdateOperation
 
   async updateById(id: ID, data: ROW): Promise<number> {
-    if (this.updatedAtColumn) {
-      data[this.updatedAtColumn] = new Date();
-    }
     return this.knex(this.table).where({ id }).update(data);
   }
 
@@ -187,12 +153,7 @@ export class CrudOperations<ID = number, ROW = any>
   // DeleteOperation
 
   async deleteById(id: ID): Promise<number> {
-    const queryBuilder = this.knex(this.table).where(this.idColumn, id);
-    // for safe delete: not delete! just update as deleted!
-    if (this.safeDelete) {
-      return queryBuilder.update(this.safeDelete);
-    }
-    return queryBuilder.delete();
+    return this.knex(this.table).where(this.idColumn, id).delete();
   }
 
   //---------------------------------------------------------
@@ -211,26 +172,14 @@ export class CrudOperations<ID = number, ROW = any>
   }
 
   //---------------------------------------------------------
+  // extension point
 
-  private queryBuilderWithFilter(filter?: CrudFilter<ID, ROW>): Knex.QueryBuilder {
-    const queryBuilder = this.knexReplica(this.table);
-    if (this.customFilter) {
-      if (this.customFilter(queryBuilder, filter)) {
-        // when custom filter returns truthy,
-        // break here! no more filter!
-        return queryBuilder;
-      }
+  protected applyFilter(queryBuilder: Knex.QueryBuilder, filter?: CrudFilter<ID, ROW>) {
+    if (!filter) {
+      return;
     }
-    if (filter) {
-      this.applyFilter(queryBuilder, filter);
-    }
-    return queryBuilder;
-  }
-
-  private applyFilter(queryBuilder: Knex.QueryBuilder, filter: CrudFilter<ID, ROW>) {
     const { exclude, include, min, max, since, until, offset, limit } = filter;
-    // exclude exact match
-    if (exclude && typeof exclude === 'object') {
+    if (exclude) {
       for (const [key, value] of Object.entries(exclude)) {
         if (canExactMatch(value)) {
           queryBuilder.whereNot(this.columnName(key), value);
@@ -239,8 +188,7 @@ export class CrudOperations<ID = number, ROW = any>
         }
       }
     }
-    // include exact match
-    if (include && typeof include === 'object') {
+    if (include) {
       for (const [key, value] of Object.entries(include)) {
         if (canExactMatch(value)) {
           queryBuilder.where(this.columnName(key), value);
@@ -269,7 +217,10 @@ export class CrudOperations<ID = number, ROW = any>
     }
   }
 
-  private applySort(queryBuilder: Knex.QueryBuilder, sorts: Array<Sort>) {
+  protected applySort(queryBuilder: Knex.QueryBuilder, sorts?: Array<Sort>) {
+    if (!sorts || !sorts.length) {
+      return;
+    }
     for (const sort of sorts) {
       queryBuilder.orderBy(
         this.columnName(sort.column),
@@ -281,7 +232,7 @@ export class CrudOperations<ID = number, ROW = any>
     }
   }
 
-  private columnName(name) {
+  protected columnName(name) {
     return `${this.table}.${name}`;
   }
 }
