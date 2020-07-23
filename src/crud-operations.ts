@@ -225,7 +225,7 @@ export class CrudOperations<ID = number, ROW = any>
     };
     // no explicit `state` filter specified,
     // exclude deleted by default
-    const exclude = include.state ? null : { state: 'DELETED' };
+    const exclude = include.state ? undefined : { state: 'DELETED' };
     return this.select(
       {
         include,
@@ -261,7 +261,7 @@ export class CrudOperations<ID = number, ROW = any>
   private applyFilter(queryBuilder: Knex.QueryBuilder, filter: CrudFilter<ID, ROW>) {
     const { exclude, include, min, max, since, until, offset, limit } = filter;
     // exclude exact match
-    if (typeof exclude === 'object') {
+    if (exclude && typeof exclude === 'object') {
       for (const [key, value] of Object.entries(exclude)) {
         if (canExactMatch(value)) {
           queryBuilder.whereNot(this.columnName(key), value);
@@ -271,7 +271,7 @@ export class CrudOperations<ID = number, ROW = any>
       }
     }
     // include exact match
-    if (typeof include === 'object') {
+    if (include && typeof include === 'object') {
       for (const [key, value] of Object.entries(include)) {
         if (canExactMatch(value)) {
           queryBuilder.where(this.columnName(key), value);
