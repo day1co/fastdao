@@ -1,39 +1,15 @@
 import { ExtraOperations } from './extra-operations';
 import Knex from 'knex';
-
-const FIXTURE = {
-  user_pref: [
-    { user_id: 1, name: 'foo', value: 'FOO1' },
-    { user_id: 1, name: 'bar', value: 'BAR1' },
-    { user_id: 1, name: 'baz', value: 'BAZ1' },
-    { user_id: 1, name: 'qux', value: 'QUX1' },
-    { user_id: 2, name: 'foo', value: 'FOO2' },
-    { user_id: 2, name: 'bar', value: 'BAR2' },
-    { user_id: 2, name: 'baz', value: 'BAZ2' },
-    { user_id: 3, name: 'foo', value: 'FOO3' },
-    { user_id: 3, name: 'bar', value: 'BAR3' },
-    { user_id: 4, name: 'foo', value: 'FOO4' },
-  ],
-};
+import * as knexOpts from '../test/knexfile';
 
 describe('extra-operations', () => {
   let knex: Knex;
   let userExtra: ExtraOperations;
 
   beforeAll(async () => {
-    knex = Knex({
-      client: 'sqlite3',
-      connection: {
-        filename: ':memory:',
-      },
-      useNullAsDefault: true,
-    });
-    await knex.schema.createTable('user_pref', (t) => {
-      t.integer('user_id').notNullable();
-      t.string('name').notNullable();
-      t.string('value');
-      t.primary(['user_id', 'name']);
-    });
+    knex = Knex(knexOpts);
+    await knex.migrate.latest({ directory: './test/migrations' });
+
     userExtra = ExtraOperations.create({ knex, table: 'user_pref', fkColumn: 'user_id' });
   });
 
@@ -42,8 +18,7 @@ describe('extra-operations', () => {
   });
 
   beforeEach(async () => {
-    await knex('user_pref').truncate();
-    await knex('user_pref').insert(FIXTURE.user_pref);
+    await knex.seed.run({ directory: './test/seeds' });
   });
 
   describe('selectByName', () => {

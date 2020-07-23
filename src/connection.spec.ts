@@ -1,6 +1,7 @@
 import Knex from 'knex';
 import moment from 'moment';
 import { connect } from './connection';
+import * as knexOpts from '../test/knexfile';
 
 const TEST_TABLE = 'test_tz';
 const momentToDate = (x) => moment(x).toDate();
@@ -57,41 +58,19 @@ const fixtures = [
   { a: 'moment(2019-01-01T00:00:00+09).utc.format', b: momentUtcFormat('2019-01-01T00:00:00+09:00') },
 ];
 
-const KNEX_OPTS_MYSQL2 = {
-  client: 'mysql2',
-  connection: {
-    host: process.env.TEST_MYSQL_HOST || 'localhost',
-    port: process.env.TEST_MYSQL_PORT || 3306,
-    database: process.env.TEST_MYSQL_DATABASE || 'test',
-    user: process.env.TEST_MYSQL_USER || 'root',
-    password: process.env.TEST_MYSQL_PASSWORD || 'root',
-    charset: 'utf8mb4',
-    timezone: 'Z',
-    decimalNumbers: true,
-  },
-};
-const KNEX_OPTS_SQLITE3 = {
-  client: 'sqlite3',
-  connection: {
-    filename: ':memory:',
-  },
-  useNullAsDefault: true,
-};
-const KNEX_OPTS = KNEX_OPTS_MYSQL2; //KNEX_OPTS_SQLITE3;
-
 describe('connection', () => {
   describe('connect', () => {
     it('should connect', () => {
-      const knex = connect(KNEX_OPTS);
+      const knex = connect(knexOpts);
       expect(knex).toBeDefined();
     });
   });
 });
 
 describe('knex timezone', () => {
-  const knex = Knex(KNEX_OPTS);
+  const knex = Knex(knexOpts);
   beforeAll(async () => {
-    await knex.schema.createTableIfNotExists(TEST_TABLE, (t) => {
+    await knex.schema.createTable(TEST_TABLE, (t) => {
       t.string('a');
       t.dateTime('b');
     });
@@ -104,7 +83,7 @@ describe('knex timezone', () => {
   });
 
   afterAll(async () => {
-    await knex.schema.dropTableIfExists(TEST_TABLE);
+    await knex.schema.dropTable(TEST_TABLE);
     knex.destroy();
   });
 
