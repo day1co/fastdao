@@ -1,6 +1,6 @@
 # fastcrud
 
-fast and simple crud using knex
+fast and simple dao using knex
 
 [![npm version](https://badge.fury.io/js/%40fastcampus%2Ffastcrud.svg)](https://badge.fury.io/js/%40fastcampus%2Ffastcrud)
 
