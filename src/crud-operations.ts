@@ -211,37 +211,6 @@ export class CrudOperations<ID = number, ROW = any>
   }
 
   //---------------------------------------------------------
-  // for compat
-
-  /**
-   * @deprecated in favor of select()
-   */
-  async selectAll(filter: any = {}, columns?: any) {
-    process.emitWarning('selectAll() is deprecated in favor of select()', 'DeprecationWarning');
-    const include = {
-      id: filter.id || filter.ids || filter._id || filter._ids,
-      type: filter.type || filter.types || filter._type || filter._types,
-      state: filter.state || filter.states || filter._state || filter._states,
-    };
-    // no explicit `state` filter specified,
-    // exclude deleted by default
-    const exclude = include.state ? undefined : { state: 'DELETED' };
-    return this.select(
-      {
-        include,
-        exclude,
-        min: filter.min || filter._min,
-        max: filter.max || filter._max,
-        since: filter.since || filter._since,
-        until: filter.until || filter._until,
-        projection: columns,
-      },
-      parseSorts(filter.sort || filter._sort),
-      parseRelations(filter.rels || filter._rels)
-    );
-  }
-
-  //---------------------------------------------------------
 
   private queryBuilderWithFilter(filter?: CrudFilter<ID, ROW>): Knex.QueryBuilder {
     const queryBuilder = this.knexReplica(this.table);
