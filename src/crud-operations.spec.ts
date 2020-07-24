@@ -73,13 +73,18 @@ describe('crud-operations', () => {
     });
   });
   describe('selectFirst', () => {
+    it('should select the first', async () => {
+      const row = await postCrud.selectFirst();
+      console.log(row);
+      expect(row).toMatchObject(await knex('post').first());
+    });
     it('should select the first one', async () => {
-      const row = await postCrud.selectFirst({ title: 'p1' });
+      const row = await postCrud.selectFirst({ include: { title: 'p1' } });
       console.log(row);
       expect(row).toMatchObject(await knex('post').where({ title: 'p1' }).first());
     });
     it('should select the first one even if deleted', async () => {
-      const row = await postCrud.selectFirst({ id: 3 });
+      const row = await postCrud.selectFirst({ include: { id: 3 } });
       console.log(row);
       expect(row).toMatchObject(await knex('post').where({ id: 3 }).first());
     });

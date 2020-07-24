@@ -36,8 +36,7 @@ export interface CrudOperationsOpts<ID = number, ROW = any> {
 export interface SelectOperations<ID = number, ROW = any> {
   select(filter?: CrudFilter<ID, ROW>, sorts?: Array<Sort>, relations?: Array<Relation>): Promise<Array<ROW>>;
   count(filter?: CrudFilter<ID, ROW>): Promise<number>;
-  // FIXME: any -> U
-  selectFirst(equal: any, sorts?: Array<Sort>, relations?: Array<Relation>): Promise<ROW>;
+  selectFirst(filter?: CrudFilter<ID, ROW>, sorts?: Array<Sort>, relations?: Array<Relation>): Promise<ROW>;
   selectById(id: ID, relations?: Array<Relation>): Promise<ROW>;
 }
 
@@ -94,7 +93,7 @@ export class CrudOperations<ID = number, ROW = any>
 
   async select(filter?: CrudFilter<ID, ROW>, sorts?: Array<Sort>, relations?: Array<Relation>): Promise<Array<ROW>> {
     const rows = this.knexReplica(this.table)
-      .modify((queryBuilder) => {
+      .modify(queryBuilder => {
         this.applyFilter(queryBuilder, filter);
         this.applySort(queryBuilder, sorts);
       })
@@ -107,21 +106,24 @@ export class CrudOperations<ID = number, ROW = any>
 
   async count(filter?: CrudFilter<ID, ROW>): Promise<number> {
     const rows = await this.knexReplica(this.table)
-      .modify((queryBuilder) => {
+      .modify(queryBuilder => {
         this.applyFilter(queryBuilder, filter);
       })
       .count();
     return rows[0]['count(*)'];
   }
 
-  // FIXME: any -> U
-  async selectFirst(include: any, sorts?: Array<Sort>, relations?: Array<Relation>): Promise<ROW | undefined> {
-    const rows = await this.select({ include, limit: 1 }, sorts, relations);
+  async selectFirst(
+    filter?: CrudFilter<ID, ROW>,
+    sorts?: Array<Sort>,
+    relations?: Array<Relation>
+  ): Promise<ROW | undefined> {
+    const rows = await this.select({ ...filter, limit: 1 }, sorts, relations);
     return rows[0];
   }
 
   async selectById(id: ID, relations?: Array<Relation>): Promise<ROW | undefined> {
-    return this.selectFirst({ [this.idColumn]: id }, null, relations);
+    return this.selectFirst({ include: { [this.idColumn]: id } }, null, relations);
   }
 
   //---------------------------------------------------------
