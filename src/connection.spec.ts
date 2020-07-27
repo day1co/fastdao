@@ -1,4 +1,3 @@
-import Knex from 'knex';
 import moment from 'moment';
 import { connect } from './connection';
 import * as knexOpts from '../test/knexfile';
@@ -68,7 +67,7 @@ describe('connection', () => {
 });
 
 describe('knex timezone', () => {
-  const knex = Knex(knexOpts);
+  const knex = connect(knexOpts);
   beforeAll(async () => {
     await knex.schema.createTable(TEST_TABLE, (t) => {
       t.string('a');

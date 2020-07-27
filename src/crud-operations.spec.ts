@@ -1,6 +1,7 @@
 import redisMock from 'redis-mock';
 import { FastCache } from '@fastcampus/fastcache';
-import Knex from 'knex';
+import * as Knex from 'knex';
+import { connect } from './connection';
 import { Weaver } from './weaver';
 import { parseSorts } from './sort';
 import { parseRelations } from './relation';
@@ -17,7 +18,7 @@ describe('crud-operations', () => {
   let commentCrud: CrudOperations;
 
   beforeAll(async () => {
-    knex = Knex(knexOpts);
+    knex = connect(knexOpts);
     await knex.migrate.latest({ directory: './test/migrations' });
 
     const weaver = Weaver.create({ knex, cache });
@@ -108,8 +109,8 @@ describe('crud-operations', () => {
         type: 'type',
         state: 'state',
         title: 'title',
-        forum_id: 1,
-        user_id: 1,
+        forumId: 1,
+        userId: 1,
       });
       console.log(row);
       expect(row).toMatchObject(await knex('post').first({ id: 999 }));
@@ -121,8 +122,8 @@ describe('crud-operations', () => {
           type: 'type997',
           state: 'new',
           title: 'title997',
-          forum_id: 1,
-          user_id: 2,
+          forumId: 1,
+          userId: 2,
         },
         {
           id: 998,
@@ -130,16 +131,16 @@ describe('crud-operations', () => {
           state: 'new',
           title: 'title998',
           content: 'content998',
-          forum_id: 3,
-          user_id: 1,
+          forumId: 3,
+          userId: 1,
         },
         {
           id: 999,
           type: 'type999',
           state: 'new',
           title: 'title999',
-          forum_id: 2,
-          user_id: 3,
+          forumId: 2,
+          userId: 3,
         },
       ];
       const row = await postCrud.insert(newRows);

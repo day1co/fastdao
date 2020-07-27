@@ -5,7 +5,7 @@ export interface Relation {
   property: string;
 }
 
-// ex. `user` === `user.id` === `user_id=user.id` === `user_id=user.id@user`
+// ex. `user` === `user.id` === `userId=user.id` === `userId=user.id@user`
 const REL_TERM_REGEXP = /((\w+)=)?(\w+)(\.(\w+))?(@(\w+))?/;
 const REL_TERM_SEPARATOR = ',';
 
@@ -16,7 +16,7 @@ export function parseRelation(s: string): Relation {
   }
   return match
     ? {
-        fk: match[2] || `${match[3]}_id`,
+        fk: match[2] || `${match[3]}Id`,
         table: match[3],
         column: match[5] || 'id',
         property: match[7] || match[3],
