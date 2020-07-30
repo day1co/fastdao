@@ -1,19 +1,71 @@
-import { parseRelation, parseRelations } from './relation';
-import { parseSort, parseSorts } from './sort';
+import { relation, parseRelation, parseRelations } from './relation';
 
 describe('relation', () => {
+  describe('relation', () => {
+    it('should create relation object', () => {
+      expect(relation('table')).toEqual({ table: 'table', column: 'id', fk: 'tableId', property: 'table' });
+      expect(relation('table', 'column')).toEqual({
+        table: 'table',
+        column: 'column',
+        fk: 'tableId',
+        property: 'table',
+      });
+      expect(relation('table', 'column', 'fk')).toEqual({
+        table: 'table',
+        column: 'column',
+        fk: 'fk',
+        property: 'table',
+      });
+      expect(relation('table', 'column', 'fk', 'property')).toEqual({
+        table: 'table',
+        column: 'column',
+        fk: 'fk',
+        property: 'property',
+      });
+    });
+  });
   describe('parseRelation', () => {
     it('should parse', () => {
-      expect(parseRelation('foo')).toEqual({ fk: 'fooId', table: 'foo', column: 'id', property: 'foo' });
-      expect(parseRelation('bar.baz')).toEqual({ fk: 'barId', table: 'bar', column: 'baz', property: 'bar' });
-      expect(parseRelation('foo=bar')).toEqual({ fk: 'foo', table: 'bar', column: 'id', property: 'bar' });
-      expect(parseRelation('foo=bar.baz')).toEqual({ fk: 'foo', table: 'bar', column: 'baz', property: 'bar' });
-      expect(parseRelation('foo=bar.baz@qux')).toEqual({ fk: 'foo', table: 'bar', column: 'baz', property: 'qux' });
-      expect(parseRelation('  foo  ')).toEqual({ fk: 'fooId', table: 'foo', column: 'id', property: 'foo' });
-      expect(parseRelation('  bar.baz  ')).toEqual({ fk: 'barId', table: 'bar', column: 'baz', property: 'bar' });
-      expect(parseRelation('  foo=bar  ')).toEqual({ fk: 'foo', table: 'bar', column: 'id', property: 'bar' });
-      expect(parseRelation('  foo=bar.baz  ')).toEqual({ fk: 'foo', table: 'bar', column: 'baz', property: 'bar' });
-      expect(parseRelation('  foo=bar.baz@qux  ')).toEqual({ fk: 'foo', table: 'bar', column: 'baz', property: 'qux' });
+      expect(parseRelation('table')).toEqual({ table: 'table', column: 'id', fk: 'tableId', property: 'table' });
+      expect(parseRelation('table.column')).toEqual({
+        table: 'table',
+        column: 'column',
+        fk: 'tableId',
+        property: 'table',
+      });
+      expect(parseRelation('fk=table')).toEqual({ table: 'table', column: 'id', fk: 'fk', property: 'table' });
+      expect(parseRelation('fk=table.column')).toEqual({
+        table: 'table',
+        column: 'column',
+        fk: 'fk',
+        property: 'table',
+      });
+      expect(parseRelation('fk=table.column@property')).toEqual({
+        table: 'table',
+        column: 'column',
+        fk: 'fk',
+        property: 'property',
+      });
+      expect(parseRelation('  table  ')).toEqual({ table: 'table', column: 'id', fk: 'tableId', property: 'table' });
+      expect(parseRelation('  table.column  ')).toEqual({
+        table: 'table',
+        column: 'column',
+        fk: 'tableId',
+        property: 'table',
+      });
+      expect(parseRelation('  fk=table  ')).toEqual({ table: 'table', column: 'id', fk: 'fk', property: 'table' });
+      expect(parseRelation('  fk=table.column  ')).toEqual({
+        table: 'table',
+        column: 'column',
+        fk: 'fk',
+        property: 'table',
+      });
+      expect(parseRelation('  fk=table.column@property  ')).toEqual({
+        table: 'table',
+        column: 'column',
+        fk: 'fk',
+        property: 'property',
+      });
     });
     it('should throw', () => {
       expect(() => parseRelation('  ')).toThrow();
@@ -26,12 +78,19 @@ describe('relation', () => {
   describe('parseRelations', () => {
     it('should parse', () => {
       expect(parseRelations('')).toMatchObject([]);
-      expect(parseRelations('  foo,bar.baz,foo=bar,foo=bar.baz,foo=bar.baz@qux  ')).toEqual([
-        { fk: 'fooId', table: 'foo', column: 'id', property: 'foo' },
-        { fk: 'barId', table: 'bar', column: 'baz', property: 'bar' },
-        { fk: 'foo', table: 'bar', column: 'id', property: 'bar' },
-        { fk: 'foo', table: 'bar', column: 'baz', property: 'bar' },
-        { fk: 'foo', table: 'bar', column: 'baz', property: 'qux' },
+      expect(parseRelations('table,table.column,fk=table,fk=table.column,fk=table.column@property')).toEqual([
+        { table: 'table', column: 'id', fk: 'tableId', property: 'table' },
+        { table: 'table', column: 'column', fk: 'tableId', property: 'table' },
+        { table: 'table', column: 'id', fk: 'fk', property: 'table' },
+        { table: 'table', column: 'column', fk: 'fk', property: 'table' },
+        { table: 'table', column: 'column', fk: 'fk', property: 'property' },
+      ]);
+      expect(parseRelations('  table,table.column,fk=table,fk=table.column,fk=table.column@property  ')).toEqual([
+        { table: 'table', column: 'id', fk: 'tableId', property: 'table' },
+        { table: 'table', column: 'column', fk: 'tableId', property: 'table' },
+        { table: 'table', column: 'id', fk: 'fk', property: 'table' },
+        { table: 'table', column: 'column', fk: 'fk', property: 'table' },
+        { table: 'table', column: 'column', fk: 'fk', property: 'property' },
       ]);
     });
     it('should throw', () => {
