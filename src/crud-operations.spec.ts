@@ -153,7 +153,8 @@ describe('crud-operations', () => {
   });
   describe('updateById', () => {
     it('should update by id', async () => {
-      await postCrud.updateById(1, { state: 'update' });
+      const updated = await postCrud.updateById(1, { state: 'update' });
+      expect(updated).toBe(1);
       const row = await knex('post').where({ id: 1 }).first();
       console.log(row);
       expect(row).toMatchObject({
@@ -162,12 +163,31 @@ describe('crud-operations', () => {
       });
     });
   });
+  describe('update', () => {
+    it('should update multiple rows', async () => {
+      const updated = await postCrud.update({ include: { forumId: 1 } }, { state: 'update' });
+      expect(updated).toBe(3);
+      const rows = await knex('post').where({ forumId: 1 });
+      console.log(rows);
+      rows.forEach((row) => expect(row.state).toBe('update'));
+    });
+  });
   describe('deleteById', () => {
     it('should delete by id', async () => {
-      await postCrud.deleteById(1);
+      const deleted = await postCrud.deleteById(1);
+      expect(deleted).toBe(1);
       const row = await knex('post').where({ id: 1 }).first();
       console.log(row);
       expect(row).toBeUndefined();
+    });
+  });
+  describe('delete', () => {
+    it('should delete multiple rows', async () => {
+      const deleted = await postCrud.delete({ include: { forumId: 1 } });
+      expect(deleted).toBe(3);
+      const rows = await knex('post').where({ forumId: 1 });
+      console.log(rows);
+      expect(rows).toEqual([]);
     });
   });
   describe('transacting', () => {

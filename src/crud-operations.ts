@@ -46,10 +46,12 @@ export interface InsertOperations<ID = number, ROW = any> {
 
 export interface UpdateOperations<ID = number, ROW = any> {
   updateById(id: ID, data: ROW): Promise<number>;
+  update(filter: CrudFilter<ID, ROW>, data: ROW): Promise<number>;
 }
 
 export interface DeleteOperations<ID = number, ROW = any> {
   deleteById(id: ID): Promise<number>;
+  delete(filter: CrudFilter<ID, ROW>): Promise<number>;
 }
 
 interface Transacting<ID = number, ROW = any> {
@@ -93,7 +95,7 @@ export class CrudOperations<ID = number, ROW = any>
 
   async select(filter?: CrudFilter<ID, ROW>, sorts?: Array<Sort>, relations?: Array<Relation>): Promise<Array<ROW>> {
     const rows = this.knexReplica(this.table)
-      .modify(queryBuilder => {
+      .modify((queryBuilder) => {
         this.applyFilter(queryBuilder, filter);
         this.applySort(queryBuilder, sorts);
       })
@@ -106,7 +108,7 @@ export class CrudOperations<ID = number, ROW = any>
 
   async count(filter?: CrudFilter<ID, ROW>): Promise<number> {
     const rows = await this.knexReplica(this.table)
-      .modify(queryBuilder => {
+      .modify((queryBuilder) => {
         this.applyFilter(queryBuilder, filter);
       })
       .count();
@@ -148,7 +150,15 @@ export class CrudOperations<ID = number, ROW = any>
   // UpdateOperation
 
   async updateById(id: ID, data: ROW): Promise<number> {
-    return this.knex(this.table).where({ id }).update(data);
+    return this.knex(this.table).where(this.idColumn, id).update(data);
+  }
+
+  async update(filter: CrudFilter<ID, ROW>, data: ROW): Promise<number> {
+    return this.knex(this.table)
+      .modify((queryBuilder) => {
+        this.applyFilter(queryBuilder, filter);
+      })
+      .update(data);
   }
 
   //---------------------------------------------------------
@@ -156,6 +166,14 @@ export class CrudOperations<ID = number, ROW = any>
 
   async deleteById(id: ID): Promise<number> {
     return this.knex(this.table).where(this.idColumn, id).delete();
+  }
+
+  async delete(filter: CrudFilter<ID, ROW>): Promise<number> {
+    return this.knex(this.table)
+      .modify((queryBuilder) => {
+        this.applyFilter(queryBuilder, filter);
+      })
+      .delete();
   }
 
   //---------------------------------------------------------
