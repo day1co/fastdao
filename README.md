@@ -1,6 +1,6 @@
-# fastcrud
+# fastdao
 
-fast and simple dao using knex
+fast and simple dao using [knex](http://knexjs.org/)
 
 [![npm version](https://badge.fury.io/js/%40fastcampus%2Ffastcrud.svg)](https://badge.fury.io/js/%40fastcampus%2Ffastcrud)
 
@@ -11,18 +11,20 @@ fast and simple dao using knex
 import { connect, CrudOperations } from '@fastcampus/fastdao';
 
 const knex = connect({ ...  });
-const userCrud = CrudOperations.create({ knex, table: 'user' });
-await userCrud.select({ ... });
-await userCrud.selectFirst({ ... });
-await userCrud.selectById(1);
-await userCrud.insert({ ... });
-await userCrud.updateById(id, { ... });
-await userCrud.deleteById(id);
+// to use a separated connection for select
+const knexReplica = connect({ ...  });
+const postCrud = CrudOperations.create({ knex, knexReplica, table: 'post' });
+await postCrud.select({ ... });
+await postCrud.selectFirst({ ... });
+await postCrud.selectById(1);
+await postCrud.insert({ ... });
+await postCrud.updateById(id, { ... });
+await postCrud.deleteById(id);
 await knex.transaction(tx => {
   try {
-    userCrud.transacting(tx).insert(...);
-    userCrud.transacting(tx).updateById(...);
-    userCrud.transacting(tx).deleteById(...);
+    postCrud.transacting(tx).insert(...);
+    postCrud.transacting(tx).updateById(...);
+    postCrud.transacting(tx).deleteById(...);
     tx.commit();
   } catch(ex) {
     tx.rollback();
