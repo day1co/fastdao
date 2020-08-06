@@ -20,15 +20,10 @@ await postCrud.selectById(1);
 await postCrud.insert({ ... });
 await postCrud.updateById(id, { ... });
 await postCrud.deleteById(id);
-await knex.transaction(tx => {
-  try {
-    postCrud.transacting(tx).insert(...);
-    postCrud.transacting(tx).updateById(...);
-    postCrud.transacting(tx).deleteById(...);
-    tx.commit();
-  } catch(ex) {
-    tx.rollback();
-  }
+await knex.transaction(async (tx) => {
+  await postCrud.transacting(tx).insert(...);
+  await postCrud.transacting(tx).updateById(...);
+  await postCrud.transacting(tx).deleteById(...);
 });
 ```
 
