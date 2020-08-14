@@ -42,10 +42,24 @@ describe('crud-operations', () => {
       console.log(rows);
       expect(rows).toMatchObject(await knex('post').select());
     });
-    it('should select with filter', async () => {
+    it('should select with include/exclude filter', async () => {
       const rows = await postCrud.select({ include: { id: [1, 2, 3] }, exclude: { id: [2] } });
       console.log(rows);
       expect(rows).toMatchObject(await knex('post').whereIn('id', [1, 3]).select());
+    });
+    it('should select with min/max filter', async () => {
+      const rows = await postCrud.select({ min: 1, max: 4 });
+      expect(rows).toMatchObject(await knex('post').whereIn('id', [1, 2, 3]).select());
+    });
+    it.skip('should select with since/until filter', async () => {
+      const rows = await postCrud.select({ include: { id: [1, 2, 3] }, exclude: { id: [2] } });
+      console.log(rows);
+      expect(rows).toMatchObject(await knex('post').whereIn('id', [1, 2, 3]).select());
+    });
+    it('should select with limit/offset filter', async () => {
+      const rows = await postCrud.select({ limit: 2, offset: 1 });
+      console.log(rows);
+      expect(rows).toMatchObject(await knex('post').whereIn('id', [2, 3]).select());
     });
     it('should select with sort', async () => {
       const rows = await postCrud.select(null, parseSorts('-id'));
@@ -67,10 +81,25 @@ describe('crud-operations', () => {
       console.log(count);
       expect(count).toBe((await knex('post').count())[0]['count(*)']);
     });
-    it('should count with filter', async () => {
+    it('should count with include/exclude filter', async () => {
       const count = await postCrud.count({ include: { id: [1, 2, 3] }, exclude: { id: [2] } });
       console.log(count);
       expect(count).toBe((await knex('post').whereIn('id', [1, 3]).count())[0]['count(*)']);
+    });
+    it('should count with min/max filter', async () => {
+      const count = await postCrud.count({ min: 1, max: 4 });
+      console.log(count);
+      expect(count).toBe((await knex('post').whereIn('id', [1, 2, 3]).count())[0]['count(*)']);
+    });
+    it.skip('should count with since/until filter', async () => {
+      const count = await postCrud.count({ since: '', until: '' });
+      console.log(count);
+      expect(count).toBe((await knex('post').whereIn('id', [1, 2, 3]).count())[0]['count(*)']);
+    });
+    it('should count with limit/offset filter', async () => {
+      const count = await postCrud.count({ limit: 2, offset: 1 });
+      console.log(count);
+      expect(count).toBe((await knex('post').whereIn('id', [2, 3]).count())[0]['count(*)']);
     });
   });
   describe('selectFirst', () => {
