@@ -21,7 +21,7 @@ Knex.QueryBuilder.extend('customReplace', function (data) {
 Knex.QueryBuilder.extend('customUpsert', function (data, updateData?) {
   const upsertClause = /^mysql/i.test(this.client.dialect)
     ? ' ON DUPLICATE KEY UPDATE '
-    : ` ON CONFLICT(${Object.keys(data).join(',')}) DO UPDATE SET `;
+    : ` ON CONFLICT(id) DO UPDATE SET `;
   const insertClause = this.insert(data).toString();
   const updateClause = this.update(updateData || data)
     .toString()
