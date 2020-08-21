@@ -29,16 +29,23 @@ await knex.transaction(async (tx) => {
 
 ## Contributing
 
-### lint
-
-```console
-$ npm run lint
-```
-
 ### test
 
 ```console
-$ npm run test
+$ npm test
 ```
 
+### build
+
+```console
+$ npm start
+```
+
+### watch(continuous build)
+
+```console
+$ npm start
+```
+
+---
 may the **SOURCE** be with you...
