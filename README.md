@@ -38,7 +38,7 @@ $ npm test
 ### build
 
 ```console
-$ npm start
+$ npm run build
 ```
 
 ### watch(continuous build)
