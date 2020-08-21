@@ -35,8 +35,11 @@ export interface CrudOperationsOpts<ID = number, ROW = any> {
 
 export interface SelectOperations<ID = number, ROW = any> {
   select(filter?: CrudFilter<ID, ROW>, sorts?: Array<Sort>, relations?: Array<Relation>): Promise<Array<ROW>>;
+
   count(filter?: CrudFilter<ID, ROW>): Promise<number>;
+
   selectFirst(filter?: CrudFilter<ID, ROW>, sorts?: Array<Sort>, relations?: Array<Relation>): Promise<ROW>;
+
   selectById(id: ID, relations?: Array<Relation>): Promise<ROW>;
 }
 
@@ -46,11 +49,13 @@ export interface InsertOperations<ID = number, ROW = any> {
 
 export interface UpdateOperations<ID = number, ROW = any> {
   updateById(id: ID, data: ROW): Promise<number>;
+
   update(filter: CrudFilter<ID, ROW>, data: ROW): Promise<number>;
 }
 
 export interface DeleteOperations<ID = number, ROW = any> {
   deleteById(id: ID): Promise<number>;
+
   delete(filter: CrudFilter<ID, ROW>): Promise<number>;
 }
 
@@ -98,6 +103,14 @@ export class CrudOperations<ID = number, ROW = any>
       .modify((queryBuilder) => {
         this.applyFilter(queryBuilder, filter);
         this.applySort(queryBuilder, sorts);
+        if (filter) {
+          if (filter.offset > 0) {
+            queryBuilder.offset(filter.offset);
+          }
+          if (filter.limit > 0) {
+            queryBuilder.limit(filter.limit);
+          }
+        }
       })
       .select(filter?.projection);
     if (relations && relations.length > 0) {
@@ -198,7 +211,7 @@ export class CrudOperations<ID = number, ROW = any>
     if (!filter) {
       return;
     }
-    const { exclude, include, min, max, since, until, offset, limit } = filter;
+    const { exclude, include, min, max, since, until } = filter;
     if (exclude) {
       for (const [key, value] of Object.entries(exclude)) {
         if (canExactMatch(value)) {
@@ -228,12 +241,6 @@ export class CrudOperations<ID = number, ROW = any>
     }
     if (canExactMatch(until)) {
       queryBuilder.where(this.columnName(this.updatedAtColumn), '<', until);
-    }
-    if (offset > 0) {
-      queryBuilder.offset(offset);
-    }
-    if (limit > 0) {
-      queryBuilder.limit(limit);
     }
   }
 
