@@ -9,6 +9,18 @@ export interface Sort {
   order: SortOrder;
 }
 
+export function sort(column: string, order = SortOrder.DEFAULT): Sort {
+  return { column, order };
+}
+
+export function sortAsc(column: string): Sort {
+  return { column, order: SortOrder.ASC };
+}
+
+export function sortDesc(column: string): Sort {
+  return { column, order: SortOrder.DESC };
+}
+
 const SORT_TERM_REGEXP = /([+\-]?)\s*(\w+)/;
 const SORT_TERM_SEPARATOR = ',';
 

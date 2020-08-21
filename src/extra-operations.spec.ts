@@ -1,40 +1,17 @@
 import { ExtraOperations } from './extra-operations';
-import Knex from 'knex';
-
-const FIXTURE = {
-  user_pref: [
-    { user_id: 1, name: 'foo', value: 'FOO1' },
-    { user_id: 1, name: 'bar', value: 'BAR1' },
-    { user_id: 1, name: 'baz', value: 'BAZ1' },
-    { user_id: 1, name: 'qux', value: 'QUX1' },
-    { user_id: 2, name: 'foo', value: 'FOO2' },
-    { user_id: 2, name: 'bar', value: 'BAR2' },
-    { user_id: 2, name: 'baz', value: 'BAZ2' },
-    { user_id: 3, name: 'foo', value: 'FOO3' },
-    { user_id: 3, name: 'bar', value: 'BAR3' },
-    { user_id: 4, name: 'foo', value: 'FOO4' },
-  ],
-};
+import * as Knex from 'knex';
+import { connect } from './connection';
+import * as knexOpts from '../test/knexfile';
 
 describe('extra-operations', () => {
   let knex: Knex;
   let userExtra: ExtraOperations;
 
   beforeAll(async () => {
-    knex = Knex({
-      client: 'sqlite3',
-      connection: {
-        filename: ':memory:',
-      },
-      useNullAsDefault: true,
-    });
-    await knex.schema.createTable('user_pref', (t) => {
-      t.integer('user_id').notNullable();
-      t.string('name').notNullable();
-      t.string('value');
-      t.primary(['user_id', 'name']);
-    });
-    userExtra = ExtraOperations.create({ knex, table: 'user_pref', fkColumn: 'user_id' });
+    knex = connect(knexOpts);
+    await knex.migrate.latest({ directory: './test/migrations' });
+
+    userExtra = ExtraOperations.create({ knex, table: 'user_pref', fkColumn: 'userId' });
   });
 
   afterAll(async () => {
@@ -42,8 +19,7 @@ describe('extra-operations', () => {
   });
 
   beforeEach(async () => {
-    await knex('user_pref').truncate();
-    await knex('user_pref').insert(FIXTURE.user_pref);
+    await knex.seed.run({ directory: './test/seeds' });
   });
 
   describe('selectByName', () => {
@@ -68,27 +44,27 @@ describe('extra-operations', () => {
   describe('upsertExtra', () => {
     it('should update', async () => {
       await userExtra.upsertExtra(1, 'foo', 'hello');
-      expect((await knex('user_pref').where({ user_id: 1, name: 'foo' }).first()).value).toBe('hello');
+      expect((await knex('user_pref').where({ userId: 1, name: 'foo' }).first()).value).toBe('hello');
     });
     it('should insert', async () => {
       await userExtra.upsertExtra(1, 'new', 'hi');
-      expect((await knex('user_pref').where({ user_id: 1, name: 'new' }).first()).value).toBe('hi');
+      expect((await knex('user_pref').where({ userId: 1, name: 'new' }).first()).value).toBe('hi');
 
       await userExtra.upsertExtra(404, 'new', 'greeting');
-      expect((await knex('user_pref').where({ user_id: 404, name: 'new' }).first()).value).toBe('greeting');
+      expect((await knex('user_pref').where({ userId: 404, name: 'new' }).first()).value).toBe('greeting');
     });
   });
 
   describe('mergeExtras', () => {
     it('should insert/update', async () => {
       await userExtra.mergeExtras(1, { foo: 'update', new: 'insert' });
-      expect(new Set(await knex('user_pref').where({ user_id: 1 }).select())).toEqual(
+      expect(new Set(await knex('user_pref').where({ userId: 1 }).select())).toEqual(
         new Set([
-          { user_id: 1, name: 'foo', value: 'update' },
-          { user_id: 1, name: 'bar', value: 'BAR1' },
-          { user_id: 1, name: 'baz', value: 'BAZ1' },
-          { user_id: 1, name: 'qux', value: 'QUX1' },
-          { user_id: 1, name: 'new', value: 'insert' },
+          { userId: 1, name: 'foo', value: 'update' },
+          { userId: 1, name: 'bar', value: 'BAR1' },
+          { userId: 1, name: 'baz', value: 'BAZ1' },
+          { userId: 1, name: 'qux', value: 'QUX1' },
+          { userId: 1, name: 'new', value: 'insert' },
         ])
       );
     });
@@ -117,10 +93,10 @@ describe('extra-operations', () => {
   describe('upsertExtras', () => {
     it('should insert/update/delete', async () => {
       await userExtra.upsertExtras(1, { foo: 'update', new: 'insert' });
-      expect(new Set(await knex('user_pref').where({ user_id: 1 }).select())).toEqual(
+      expect(new Set(await knex('user_pref').where({ userId: 1 }).select())).toEqual(
         new Set([
-          { user_id: 1, name: 'foo', value: 'update' },
-          { user_id: 1, name: 'new', value: 'insert' },
+          { userId: 1, name: 'foo', value: 'update' },
+          { userId: 1, name: 'new', value: 'insert' },
         ])
       );
     });
@@ -129,10 +105,10 @@ describe('extra-operations', () => {
   describe('deleteExtras', () => {
     it('should delete', async () => {
       await userExtra.deleteExtras(1, ['foo', 'bar', 'not_found']);
-      expect(new Set(await knex('user_pref').where({ user_id: 1 }).select())).toEqual(
+      expect(new Set(await knex('user_pref').where({ userId: 1 }).select())).toEqual(
         new Set([
-          { user_id: 1, name: 'baz', value: 'BAZ1' },
-          { user_id: 1, name: 'qux', value: 'QUX1' },
+          { userId: 1, name: 'baz', value: 'BAZ1' },
+          { userId: 1, name: 'qux', value: 'QUX1' },
         ])
       );
     });

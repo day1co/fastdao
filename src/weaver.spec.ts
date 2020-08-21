@@ -1,6 +1,6 @@
 import redisMock from 'redis-mock';
 import { FastCache } from '@fastcampus/fastcache';
-import Knex from 'knex';
+import { connect } from './connection';
 import { Weaver } from './weaver';
 import { parseRelations } from './relation';
 
@@ -18,7 +18,7 @@ describe('weaver', () => {
   let knex;
 
   beforeAll(async () => {
-    knex = Knex(KNEX_OPTS);
+    knex = connect(KNEX_OPTS);
     await knex.migrate.latest({ directory: './test/migrations' });
   });
 
@@ -38,8 +38,8 @@ describe('weaver', () => {
       const postsWithRels = await rr.weave(posts, parseRelations('forum,user'));
       console.log('postsWithRels:', postsWithRels);
       for (const post of postsWithRels) {
-        expect(post.forum).toEqual(await knex('forum').where({ id: post.forum_id }).first());
-        expect(post.user).toEqual(await knex('user').where({ id: post.user_id }).first());
+        expect(post.forum).toEqual(await knex('forum').where({ id: post.forumId }).first());
+        expect(post.user).toEqual(await knex('user').where({ id: post.userId }).first());
       }
       console.log(rr.cacheStat);
     });

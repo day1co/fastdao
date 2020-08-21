@@ -1,18 +1,12 @@
 import redisMock from 'redis-mock';
 import { FastCache } from '@fastcampus/fastcache';
-import Knex from 'knex';
+import * as Knex from 'knex';
+import { connect } from './connection';
 import { Weaver } from './weaver';
 import { parseSorts } from './sort';
 import { parseRelations } from './relation';
 import { CrudOperations } from './crud-operations';
-
-const KNEX_OPTS = {
-  client: 'sqlite3',
-  connection: {
-    filename: ':memory:',
-  },
-  useNullAsDefault: true,
-};
+import * as knexOpts from '../test/knexfile';
 
 const cache = FastCache.create({ redis: {}, createRedisClient: redisMock.createClient });
 
@@ -24,7 +18,7 @@ describe('crud-operations', () => {
   let commentCrud: CrudOperations;
 
   beforeAll(async () => {
-    knex = Knex(KNEX_OPTS);
+    knex = connect(knexOpts);
     await knex.migrate.latest({ directory: './test/migrations' });
 
     const weaver = Weaver.create({ knex, cache });
@@ -48,10 +42,24 @@ describe('crud-operations', () => {
       console.log(rows);
       expect(rows).toMatchObject(await knex('post').select());
     });
-    it('should select with filter', async () => {
+    it('should select with include/exclude filter', async () => {
       const rows = await postCrud.select({ include: { id: [1, 2, 3] }, exclude: { id: [2] } });
       console.log(rows);
       expect(rows).toMatchObject(await knex('post').whereIn('id', [1, 3]).select());
+    });
+    it('should select with min/max filter', async () => {
+      const rows = await postCrud.select({ min: 1, max: 4 });
+      expect(rows).toMatchObject(await knex('post').whereIn('id', [1, 2, 3]).select());
+    });
+    it.skip('should select with since/until filter', async () => {
+      const rows = await postCrud.select({ include: { id: [1, 2, 3] }, exclude: { id: [2] } });
+      console.log(rows);
+      expect(rows).toMatchObject(await knex('post').whereIn('id', [1, 2, 3]).select());
+    });
+    it('should select with limit/offset filter', async () => {
+      const rows = await postCrud.select({ limit: 2, offset: 1 });
+      console.log(rows);
+      expect(rows).toMatchObject(await knex('post').whereIn('id', [2, 3]).select());
     });
     it('should select with sort', async () => {
       const rows = await postCrud.select(null, parseSorts('-id'));
@@ -66,28 +74,47 @@ describe('crud-operations', () => {
         expect(row.user).toEqual(await knex('user').where({ id: row.user.id }).first());
       }
     });
-    it('should select all with custom filter', async () => {
-      const postCrudCustom = CrudOperations.create({
-        knex,
-        table: 'post',
-        customFilter(qb, filter) {
-          qb.where({ id: 2 });
-          return true;
-        },
-      });
-      const rows = await postCrudCustom.select({ include: { id: 1 } });
-      console.log(rows);
-      expect(rows).toMatchObject(await knex('post').where({ id: 2 }).select());
+  });
+  describe('count', () => {
+    it('should count all', async () => {
+      const count = await postCrud.count();
+      console.log(count);
+      expect(count).toBe((await knex('post').count())[0]['count(*)']);
+    });
+    it('should count with include/exclude filter', async () => {
+      const count = await postCrud.count({ include: { id: [1, 2, 3] }, exclude: { id: [2] } });
+      console.log(count);
+      expect(count).toBe((await knex('post').whereIn('id', [1, 3]).count())[0]['count(*)']);
+    });
+    it('should count with min/max filter', async () => {
+      const count = await postCrud.count({ min: 1, max: 4 });
+      console.log(count);
+      expect(count).toBe((await knex('post').whereIn('id', [1, 2, 3]).count())[0]['count(*)']);
+    });
+    it.skip('should count with since/until filter', async () => {
+      const count = await postCrud.count({ since: '', until: '' });
+      console.log(count);
+      expect(count).toBe((await knex('post').whereIn('id', [1, 2, 3]).count())[0]['count(*)']);
+    });
+    it('should count ignore limit/offset', async () => {
+      const count = await postCrud.count({ limit: 2, offset: 1 });
+      console.log(count);
+      expect(count).toBe((await knex('post').count())[0]['count(*)']);
     });
   });
   describe('selectFirst', () => {
+    it('should select the first', async () => {
+      const row = await postCrud.selectFirst();
+      console.log(row);
+      expect(row).toMatchObject(await knex('post').first());
+    });
     it('should select the first one', async () => {
-      const row = await postCrud.selectFirst({ title: 'p1' });
+      const row = await postCrud.selectFirst({ include: { title: 'p1' } });
       console.log(row);
       expect(row).toMatchObject(await knex('post').where({ title: 'p1' }).first());
     });
     it('should select the first one even if deleted', async () => {
-      const row = await postCrud.selectFirst({ id: 3 });
+      const row = await postCrud.selectFirst({ include: { id: 3 } });
       console.log(row);
       expect(row).toMatchObject(await knex('post').where({ id: 3 }).first());
     });
@@ -105,22 +132,58 @@ describe('crud-operations', () => {
     });
   });
   describe('insert', () => {
-    it('should insert new one', async () => {
+    it('should insert new row', async () => {
       const row = await postCrud.insert({
         id: 999,
         type: 'type',
         state: 'state',
         title: 'title',
-        forum_id: 1,
-        user_id: 1,
+        forumId: 1,
+        userId: 1,
       });
       console.log(row);
-      expect(row).toMatchObject(await knex('post').select({ id: 999 }).first());
+      expect(row).toMatchObject(await knex('post').first({ id: 999 }));
+    });
+    it('should insert new rows', async () => {
+      const newRows = [
+        {
+          id: 997,
+          type: 'type997',
+          state: 'new',
+          title: 'title997',
+          forumId: 1,
+          userId: 2,
+        },
+        {
+          id: 998,
+          type: 'type998',
+          state: 'new',
+          title: 'title998',
+          content: 'content998',
+          forumId: 3,
+          userId: 1,
+        },
+        {
+          id: 999,
+          type: 'type999',
+          state: 'new',
+          title: 'title999',
+          forumId: 2,
+          userId: 3,
+        },
+      ];
+      const row = await postCrud.insert(newRows);
+      console.log(row);
+      const rows = await knex('post').where({ state: 'new' }).select();
+      // mysql: the first one, sqlite3: the last one, ...
+      expect(rows).toContainEqual(row);
+      expect(rows).toMatchObject(newRows);
     });
   });
   describe('updateById', () => {
     it('should update by id', async () => {
-      await postCrud.updateById(1, { state: 'update' });
+      const updated = await postCrud.updateById(1, { state: 'update' });
+      expect(updated).toBe(1);
       const row = await knex('post').where({ id: 1 }).first();
       console.log(row);
       expect(row).toMatchObject({
@@ -129,15 +192,31 @@ describe('crud-operations', () => {
       });
     });
   });
+  describe('update', () => {
+    it('should update multiple rows', async () => {
+      const updated = await postCrud.update({ include: { forumId: 1 } }, { state: 'update' });
+      expect(updated).toBe(3);
+      const rows = await knex('post').where({ forumId: 1 });
+      console.log(rows);
+      rows.forEach((row) => expect(row.state).toBe('update'));
+    });
+  });
   describe('deleteById', () => {
     it('should delete by id', async () => {
-      await postCrud.deleteById(1);
+      const deleted = await postCrud.deleteById(1);
+      expect(deleted).toBe(1);
       const row = await knex('post').where({ id: 1 }).first();
       console.log(row);
-      expect(row).toMatchObject({
-        id: 1,
-        state: 'DELETED',
-      });
+      expect(row).toBeUndefined();
+    });
+  });
+  describe('delete', () => {
+    it('should delete multiple rows', async () => {
+      const deleted = await postCrud.delete({ include: { forumId: 1 } });
+      expect(deleted).toBe(3);
+      const rows = await knex('post').where({ forumId: 1 });
+      console.log(rows);
+      expect(rows).toEqual([]);
     });
   });
   describe('transacting', () => {

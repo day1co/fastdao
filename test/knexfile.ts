@@ -1,7 +1,4 @@
-module.exports = {
-  client: 'sqlite3',
-  connection: {
-    filename: './test.sqlite3',
-  },
-  useNullAsDefault: true,
-};
+import sqlite3 from './sqlite3';
+import mysql2 from './mysql2';
+
+module.exports = process.env.NODE_ENV === 'test' ? sqlite3 : mysql2;

@@ -3,5 +3,5 @@ export const canExactMatch = (value) => {
 };
 
 export const canExactMatchIn = (value) => {
-  return Array.isArray(value) && value.length > 0 && value.every((it) => this.canExactMatch(it));
+  return Array.isArray(value) && value.length > 0 && value.every((it) => canExactMatch(it));
 };

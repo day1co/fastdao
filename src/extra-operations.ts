@@ -58,28 +58,22 @@ export class ExtraOperations {
 
   // 개별 추가/갱신
   async upsertExtra(id, name, value) {
-    return this.knex.raw(
-      this.knex(this.table)
-        .insert({ [this.fkColumn]: id, [this.nameColumn]: name, [this.valueColumn]: value })
-        .toString()
-        .replace(/^INSERT/i, 'REPLACE')
-    ); // XXX: better way?
+    return this.knex(this.table).customReplace({
+      [this.fkColumn]: id,
+      [this.nameColumn]: name,
+      [this.valueColumn]: value,
+    });
   }
 
   // 일괄 병합(추가,갱신만)
   async mergeExtras(id, extras) {
-    return this.knex.raw(
-      this.knex(this.table)
-        .insert(
-          Object.entries(extras).map(([name, value]) => ({
-            [this.fkColumn]: id,
-            [this.nameColumn]: name,
-            [this.valueColumn]: value,
-          }))
-        )
-        .toString()
-        .replace(/^INSERT/i, 'REPLACE')
-    ); // XXX: better way?
+    return this.knex(this.table).customReplace(
+      Object.entries(extras).map(([name, value]) => ({
+        [this.fkColumn]: id,
+        [this.nameColumn]: name,
+        [this.valueColumn]: value,
+      }))
+    );
   }
 
   // 일괄 조회
@@ -94,30 +88,22 @@ export class ExtraOperations {
 
   // 일괄 추가,갱신 그리고 삭제
   async upsertExtras(id, extras) {
-    return this.knex.transaction((tx) =>
-      tx
-        .raw(
-          this.knex(this.table)
-            .insert(
-              Object.entries(extras).map(([name, value]) => ({
-                [this.fkColumn]: id,
-                [this.nameColumn]: name,
-                [this.valueColumn]: value,
-              }))
-            )
-            .toString()
-            .replace(/^INSERT/i, 'REPLACE') // XXX: better way?
-        )
-        .then(() =>
-          this.knex(this.table)
-            .transacting(tx)
-            .where(this.fkColumn, id)
-            .whereNotIn(this.nameColumn, Object.keys(extras))
-            .delete()
-        )
-        .then(tx.commit)
-        .catch(tx.rollback)
-    );
+    return this.knex.transaction(async (tx) => {
+      await this.knex(this.table)
+        .transacting(tx)
+        .customReplace(
+          Object.entries(extras).map(([name, value]) => ({
+            [this.fkColumn]: id,
+            [this.nameColumn]: name,
+            [this.valueColumn]: value,
+          }))
+        );
+      await this.knex(this.table)
+        .transacting(tx)
+        .where(this.fkColumn, id)
+        .whereNotIn(this.nameColumn, Object.keys(extras))
+        .delete();
+    });
   }
 
   // 일괄 삭제
