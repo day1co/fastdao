@@ -96,10 +96,10 @@ describe('crud-operations', () => {
       console.log(count);
       expect(count).toBe((await knex('post').whereIn('id', [1, 2, 3]).count())[0]['count(*)']);
     });
-    it('should count with limit/offset filter', async () => {
+    it('should count ignore limit/offset', async () => {
       const count = await postCrud.count({ limit: 2, offset: 1 });
       console.log(count);
-      expect(count).toBe((await knex('post').whereIn('id', [2, 3]).count())[0]['count(*)']);
+      expect(count).toBe((await knex('post').count())[0]['count(*)']);
     });
   });
   describe('selectFirst', () => {
