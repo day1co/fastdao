@@ -3,7 +3,7 @@ import * as Knex from 'knex';
 import { SortOrder, Sort, parseSorts } from './sort';
 import { Relation, parseRelations } from './relation';
 import { Weaver } from './weaver';
-import { canExactMatch, canExactMatchIn } from './util';
+import { canExactMatch, canExactMatchIn, isNull } from './util';
 
 export interface CrudFilter<ID = number, ROW = any> {
   // for exact match
@@ -218,6 +218,8 @@ export class CrudOperations<ID = number, ROW = any>
           queryBuilder.whereNot(this.columnName(key), value);
         } else if (canExactMatchIn(value)) {
           queryBuilder.whereNotIn(this.columnName(key), value as Array<any>);
+        } else if (isNull(value)) {
+          queryBuilder.whereNotNull(this.columnName(key));
         }
       }
     }
@@ -227,6 +229,8 @@ export class CrudOperations<ID = number, ROW = any>
           queryBuilder.where(this.columnName(key), value);
         } else if (canExactMatchIn(value)) {
           queryBuilder.whereIn(this.columnName(key), value as Array<any>);
+        } else if (isNull(value)) {
+          queryBuilder.whereNull(this.columnName(key));
         }
       }
     }

@@ -47,6 +47,12 @@ describe('crud-operations', () => {
       console.log(rows);
       expect(rows).toMatchObject(await knex('post').whereIn('id', [1, 3]).select());
     });
+    it('should select with include/exclude null filter', async () => {
+      const rows1 = await postCrud.select({ include: { id: [9, 10], linked_post_id: null } });
+      expect(rows1).toMatchObject(await knex('post').whereIn('id', [9]).select());
+      const rows2 = await postCrud.select({ include: { id: [9, 10] }, exclude: { linked_post_id: null } });
+      expect(rows2).toMatchObject(await knex('post').whereIn('id', [10]).select());
+    });
     it('should select with min/max filter', async () => {
       const rows = await postCrud.select({ min: 1, max: 4 });
       expect(rows).toMatchObject(await knex('post').whereIn('id', [1, 2, 3]).select());
