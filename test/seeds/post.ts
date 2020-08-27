@@ -13,5 +13,6 @@ export async function seed(knex: Knex): Promise<void> {
     { id: 7, type: 'POST', state: 'NORMAL', title: 'p7', content: 'p7 f1 u3', forum_id: 1, user_id: 3 },
     { id: 8, type: 'POST', state: 'NORMAL', title: 'p8', content: 'p8 f2 u3', forum_id: 2, user_id: 3 },
     { id: 9, type: 'POST', state: 'DELETED', title: 'p9', content: 'p9 f3 u3', forum_id: 3, user_id: 3 },
+    { id: 10, type: 'POST', state: 'NORMAL', title: 'p10', content: 'p10 f3 u3', forum_id: 3, user_id: 3, linked_post_id: 1 },
   ]);
 }
