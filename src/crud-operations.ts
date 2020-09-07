@@ -40,6 +40,8 @@ export interface SelectOperations<ID = number, ROW = any> {
 
   selectFirst(filter?: CrudFilter<ID, ROW>, sorts?: Array<Sort>, relations?: Array<Relation>): Promise<ROW>;
 
+  exist(filter?: CrudFilter<ID, ROW>): Promise<number>;
+
   selectById(id: ID, relations?: Array<Relation>): Promise<ROW>;
 }
 
@@ -135,6 +137,13 @@ export class CrudOperations<ID = number, ROW = any>
   ): Promise<ROW | undefined> {
     const rows = await this.select({ ...filter, limit: 1 }, sorts, relations);
     return rows[0];
+  }
+
+  async exist(
+    filter?: CrudFilter<ID, ROW>
+  ): Promise<boolean> {
+    const row = await this.selectFirst(filter);
+    return row === undefined;
   }
 
   async selectById(id: ID, relations?: Array<Relation>): Promise<ROW | undefined> {
