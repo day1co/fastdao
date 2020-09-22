@@ -34,14 +34,11 @@ describe('weaver', () => {
     it('should weave', async () => {
       const rr = Weaver.create({ knex, cache });
       const posts = await knex('post').select();
-      console.log('posts:', posts);
       const postsWithRels = await rr.weave(posts, parseRelations('forum,user'));
-      console.log('postsWithRels:', postsWithRels);
       for (const post of postsWithRels) {
         expect(post.forum).toEqual(await knex('forum').where({ id: post.forumId }).first());
         expect(post.user).toEqual(await knex('user').where({ id: post.userId }).first());
       }
-      console.log(rr.cacheStat);
     });
     it('should weave nothing', async () => {
       const rr = Weaver.create({ knex, cache });
