@@ -10,6 +10,7 @@ export async function up(knex: Knex): Promise<void> {
     t.string('content');
     t.integer('forum_id').notNullable();
     t.integer('user_id').notNullable();
+    t.integer('linked_post_id').nullable();
     //t.foreign('forum_id').references('id').inTable('forum');
     //t.foreign('user_id').references('id').inTable('user');
   });

@@ -17,8 +17,12 @@ const postCrud = CrudOperations.create({ knex, knexReplica, table: 'post' });
 await postCrud.select({ ... });
 await postCrud.selectFirst({ ... });
 await postCrud.selectById(1);
+await postCrud.count({ ... });
+await postCrud.exist({ ... });
 await postCrud.insert({ ... });
+await postCrud.update({ ... });
 await postCrud.updateById(id, { ... });
+await postCrud.delete({ ... });
 await postCrud.deleteById(id);
 await knex.transaction(async (tx) => {
   await postCrud.transacting(tx).insert(...);
@@ -38,7 +42,7 @@ $ npm test
 ### build
 
 ```console
-$ npm start
+$ npm run build
 ```
 
 ### watch(continuous build)

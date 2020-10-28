@@ -1,6 +1,6 @@
 {
   "name": "@fastcampus/fastdao",
-  "version": "0.0.9",
+  "version": "0.0.12",
   "description": "fast and simple dao using knex",
   "url": "https://github.com/fastcampusgit/fastdao",
   "repository": "https://github.com/fastcampusgit/fastdao",
@@ -10,36 +10,44 @@
   "types": "dist/index.d.js",
   "scripts": {
     "prepublishOnly": "npm run build",
-    "pretest": "eslint --ext .js --ext .ts ./src",
+    "pretest": "npm run lint",
+    "prebuild": "npm run lint",
+    "lint": "eslint --ext .js --ext .ts ./src",
     "test": "jest --forceExit --detectOpenHandles --runInBand --coverage --verbose  ./src",
+    "ci:test": "./ci_test.sh",
     "build": "tsc",
     "start": "tsc -w"
   },
   "devDependencies": {
-    "@types/jest": "^26.0.10",
+    "@types/jest": "^26.0.15",
     "@types/knex": "^0.16.1",
-    "@types/node": "^14.6.0",
-    "@types/redis": "^2.8.25",
-    "@typescript-eslint/eslint-plugin": "^3.9.1",
-    "@typescript-eslint/parser": "^3.9.1",
-    "eslint": "^7.7.0",
-    "eslint-config-prettier": "^6.11.0",
+    "@types/node": "^14.14.5",
+    "@types/redis": "^2.8.28",
+    "@typescript-eslint/eslint-plugin": "^4.6.0",
+    "@typescript-eslint/parser": "^4.6.0",
+    "eslint": "^7.12.1",
+    "eslint-config-prettier": "^6.15.0",
     "eslint-plugin-prettier": "^3.1.4",
-    "jest": "^26.4.1",
-    "prettier": "^2.0.5",
-    "redis-mock": "^0.51.0",
+    "jest": "^26.6.1",
+    "knex": "^0.21.8",
+    "moment": "^2.29.1",
+    "mysql2": "^2.2.5",
+    "prettier": "^2.1.2",
+    "redis": "^3.0.2",
+    "redis-mock": "^0.52.0",
     "sqlite3": "^5.0.0",
-    "ts-jest": "^26.2.0",
-    "ts-node": "^8.10.2",
-    "typescript": "^4.0.2"
+    "ts-jest": "^26.4.3",
+    "ts-node": "^9.0.0",
+    "typescript": "^4.0.5"
+  },
+  "peerDependencies": {
+    "knex": "^0.21.8",
+    "mysql2": "^2.2.5",
+    "redis": "^3.0.2"
   },
   "dependencies": {
-    "@fastcampus/fastbus": "^0.1.3",
-    "@fastcampus/fastcache": "0.0.5",
-    "@fastcampus/fastcase": "^0.1.2",
-    "knex": "^0.21.5",
-    "moment": "^2.27.0",
-    "mysql2": "^2.1.0",
-    "redis": "^3.0.2"
+    "@fastcampus/fastbus": "^0.1.4",
+    "@fastcampus/fastcache": "^0.0.5",
+    "@fastcampus/fastcase": "^0.1.3"
   }
 }

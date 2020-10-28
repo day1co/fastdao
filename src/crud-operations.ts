@@ -3,7 +3,7 @@ import * as Knex from 'knex';
 import { SortOrder, Sort, parseSorts } from './sort';
 import { Relation, parseRelations } from './relation';
 import { Weaver } from './weaver';
-import { canExactMatch, canExactMatchIn } from './util';
+import { canExactMatch, canExactMatchIn, isNull } from './util';
 
 export interface CrudFilter<ID = number, ROW = any> {
   // for exact match
@@ -39,6 +39,8 @@ export interface SelectOperations<ID = number, ROW = any> {
   count(filter?: CrudFilter<ID, ROW>): Promise<number>;
 
   selectFirst(filter?: CrudFilter<ID, ROW>, sorts?: Array<Sort>, relations?: Array<Relation>): Promise<ROW>;
+
+  exist(filter?: CrudFilter<ID, ROW>): Promise<boolean>;
 
   selectById(id: ID, relations?: Array<Relation>): Promise<ROW>;
 }
@@ -137,6 +139,11 @@ export class CrudOperations<ID = number, ROW = any>
     return rows[0];
   }
 
+  async exist(filter?: CrudFilter<ID, ROW>): Promise<boolean> {
+    const row = await this.selectFirst(filter);
+    return row !== undefined;
+  }
+
   async selectById(id: ID, relations?: Array<Relation>): Promise<ROW | undefined> {
     return this.selectFirst({ include: { [this.idColumn]: id } }, null, relations);
   }
@@ -218,6 +225,8 @@ export class CrudOperations<ID = number, ROW = any>
           queryBuilder.whereNot(this.columnName(key), value);
         } else if (canExactMatchIn(value)) {
           queryBuilder.whereNotIn(this.columnName(key), value as Array<any>);
+        } else if (isNull(value)) {
+          queryBuilder.whereNotNull(this.columnName(key));
         }
       }
     }
@@ -227,6 +236,8 @@ export class CrudOperations<ID = number, ROW = any>
           queryBuilder.where(this.columnName(key), value);
         } else if (canExactMatchIn(value)) {
           queryBuilder.whereIn(this.columnName(key), value as Array<any>);
+        } else if (isNull(value)) {
+          queryBuilder.whereNull(this.columnName(key));
         }
       }
     }

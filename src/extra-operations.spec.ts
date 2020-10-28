@@ -73,19 +73,14 @@ describe('extra-operations', () => {
   describe('selectExtras', () => {
     it('should select all', async () => {
       const r1 = await userExtra.selectExtras(1);
-      console.log(r1);
       expect(r1).toEqual({ foo: 'FOO1', bar: 'BAR1', baz: 'BAZ1', qux: 'QUX1' });
       const r2 = await userExtra.selectExtras(2);
-      console.log(r2);
       expect(r2).toEqual({ foo: 'FOO2', bar: 'BAR2', baz: 'BAZ2' });
       const r3 = await userExtra.selectExtras(3);
-      console.log(r3);
       expect(r3).toEqual({ foo: 'FOO3', bar: 'BAR3' });
       const r4 = await userExtra.selectExtras(4);
-      console.log(r4);
       expect(r4).toEqual({ foo: 'FOO4' });
       const r5 = await userExtra.selectExtras(5);
-      console.log(r5);
       expect(r5).toEqual({});
     });
   });
