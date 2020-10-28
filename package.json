@@ -14,6 +14,7 @@
     "prebuild": "npm run lint",
     "lint": "eslint --ext .js --ext .ts ./src",
     "test": "jest --forceExit --detectOpenHandles --runInBand --coverage --verbose  ./src",
+    "ci:test": "./ci_test.sh",
     "build": "tsc",
     "start": "tsc -w"
   },
