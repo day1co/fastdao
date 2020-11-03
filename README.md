@@ -2,7 +2,7 @@
 
 fast and simple dao using [knex](http://knexjs.org/)
 
-[![npm version](https://badge.fury.io/js/%40fastcampus%2Ffastcrud.svg)](https://badge.fury.io/js/%40fastcampus%2Ffastcrud)
+[![npm version](https://badge.fury.io/js/%40fastcampus%2Ffastdao.svg)](https://badge.fury.io/js/%40fastcampus%2Ffastdao)
 
 ## Getting Started
 
