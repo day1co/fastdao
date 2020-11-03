@@ -1,4 +1,4 @@
-name: FastDao CI
+name: ci
 
 on:
   push:
@@ -17,6 +17,7 @@ jobs:
     strategy:
       matrix:
         node-version: [14.x]
+
     services:
       redis:
         image: redis
@@ -31,31 +32,14 @@ jobs:
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     steps:
-      - uses: actions/checkout@v1
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: Bootstrap
-        run: |
-          npm i 
-      - name: Begin Test
-        run: |
-          npm run ci:test
-        env:
-          NODE_ENV: test
-          CI: true
-  publish:
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-          registry-url: https://registry.npmjs.org/
-      - run: npm publish --access public
+      - run: npm ci
+      - run: npm run ci:test
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          NODE_ENV: test
+          CI: true

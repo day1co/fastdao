@@ -1,15 +1,21 @@
 #!/bin/bash
 export NODE_ENV=test
-if [ $GITHUB_ACTIONS ]; then
-echo do not use docker-compose 
+
+if [ ${GITHUB_ACTIONS} ]; then
+  DOCKER_COMPOSE_CMD="echo skip docker-compose"
 else
-docker-compose down && docker-compose up -d redis mysql && sleep 10
+  DOCKER_COMPOSE_CMD="docker-compose"
 fi
+
+${DOCKER_COMPOSE_CMD} down || exit 1
+${DOCKER_COMPOSE_CMD} up -d || exit 1
+sleep 5
+
 if npm run test; then
   echo "Test Success"
-  docker-compose down
+  ${DOCKER_COMPOSE_CMD} down
 else
-	echo "Test Failed"
-  docker-compose down
-	exit 1
+  echo "Test Failed"
+  ${DOCKER_COMPOSE_CMD} down
+  exit 1
 fi
