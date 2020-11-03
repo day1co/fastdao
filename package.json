@@ -1,9 +1,9 @@
 {
   "name": "@fastcampus/fastdao",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "fast and simple dao using knex",
-  "url": "https://github.com/fastcampusgit/fastdao",
-  "repository": "https://github.com/fastcampusgit/fastdao",
+  "url": "https://github.com/fastcampus/fastdao",
+  "repository": "https://github.com/fastcampus/fastdao",
   "author": "iolo@fastcampus.co.kr",
   "license": "MIT",
   "main": "dist/index.js",
@@ -21,33 +21,33 @@
   "devDependencies": {
     "@types/jest": "^26.0.15",
     "@types/knex": "^0.16.1",
-    "@types/node": "^14.14.5",
+    "@types/node": "^14.14.6",
     "@types/redis": "^2.8.28",
-    "@typescript-eslint/eslint-plugin": "^4.6.0",
-    "@typescript-eslint/parser": "^4.6.0",
+    "@typescript-eslint/eslint-plugin": "^4.6.1",
+    "@typescript-eslint/parser": "^4.6.1",
     "eslint": "^7.12.1",
     "eslint-config-prettier": "^6.15.0",
     "eslint-plugin-prettier": "^3.1.4",
-    "jest": "^26.6.1",
-    "knex": "^0.21.8",
+    "jest": "^26.6.2",
+    "knex": "^0.21.12",
     "moment": "^2.29.1",
     "mysql2": "^2.2.5",
     "prettier": "^2.1.2",
     "redis": "^3.0.2",
-    "redis-mock": "^0.52.0",
+    "redis-mock": "^0.53.0",
     "sqlite3": "^5.0.0",
     "ts-jest": "^26.4.3",
     "ts-node": "^9.0.0",
     "typescript": "^4.0.5"
   },
   "peerDependencies": {
-    "knex": "^0.21.8",
+    "knex": "^0.21.12",
     "mysql2": "^2.2.5",
     "redis": "^3.0.2"
   },
   "dependencies": {
-    "@fastcampus/fastbus": "^0.1.4",
-    "@fastcampus/fastcache": "^0.0.5",
-    "@fastcampus/fastcase": "^0.1.3"
+    "@fastcampus/fastbus": "^0.1.5",
+    "@fastcampus/fastcache": "^0.0.7",
+    "@fastcampus/fastcase": "^0.1.4"
   }
 }
