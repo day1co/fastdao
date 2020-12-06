@@ -155,7 +155,7 @@ export class CrudOperations<ID = number, ROW = any>
     // result is varying on dialect
     // mysql: the first one, sqlite3: the last one, ...
     // see http://knexjs.org/#Builder-insert
-    const [insertId] = await this.knex(this.table).insert(data, [this.idColumn]);
+    const [insertId] = await this.knex(this.table).insert(data);
     // return just inserted row
     // use same data source to avoid replication delay
     return this.knex(this.table)
