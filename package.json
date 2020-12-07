@@ -1,6 +1,6 @@
 {
   "name": "@fastcampus/fastdao",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "fast and simple dao using knex",
   "url": "https://github.com/fastcampus/fastdao",
   "repository": "https://github.com/fastcampus/fastdao",
@@ -19,15 +19,15 @@
     "start": "tsc -w"
   },
   "devDependencies": {
-    "@types/jest": "^26.0.15",
+    "@types/jest": "^26.0.16",
     "@types/knex": "^0.16.1",
     "@types/node": "^14.14.10",
     "@types/redis": "^2.8.28",
-    "@typescript-eslint/eslint-plugin": "^4.8.2",
-    "@typescript-eslint/parser": "^4.8.2",
-    "eslint": "^7.14.0",
-    "eslint-config-prettier": "^6.15.0",
-    "eslint-plugin-prettier": "^3.1.4",
+    "@typescript-eslint/eslint-plugin": "^4.9.0",
+    "@typescript-eslint/parser": "^4.9.0",
+    "eslint": "^7.15.0",
+    "eslint-config-prettier": "^7.0.0",
+    "eslint-plugin-prettier": "^3.2.0",
     "jest": "^26.6.3",
     "knex": "^0.21.12",
     "moment": "^2.29.1",
@@ -37,7 +37,7 @@
     "redis-mock": "^0.55.0",
     "sqlite3": "^5.0.0",
     "ts-jest": "^26.4.4",
-    "ts-node": "^9.0.0",
+    "ts-node": "^9.1.0",
     "typescript": "^4.1.2"
   },
   "peerDependencies": {
