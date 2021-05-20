@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "@fastcampus/fastbus": "^0.1.5",
-    "@fastcampus/fastcache": "^0.0.9",
+    "@fastcampus/fastcache": "^0.0.10",
     "@fastcampus/fastcase": "^0.1.4"
   }
 }
