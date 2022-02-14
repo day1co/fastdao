@@ -1,0 +1,17 @@
+categories:
+  - title: 'fastdao'
+  - title: '🏢 New Features'
+    labels:
+      - 'enhancement'
+  - title: '🐛 Bug Fixes'
+    labels:
+      - 'bug'
+  - title: '🧰 Maintenance'
+    labels:
+      - 'maintenance'
+exclude-labels:
+  - 'skip-changelog'
+template: |
+  ## What’s Changed
+
+  $CHANGES

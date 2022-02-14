@@ -1,0 +1,5 @@
+enhancement: ['feat/*']
+bug: ['fix/*']
+maintenance: ['refactor/*']
+documentation: ['docs/*']
+workflow: ['workflow/*']
