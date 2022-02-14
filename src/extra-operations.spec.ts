@@ -1,5 +1,5 @@
 import { ExtraOperations } from './extra-operations';
-import * as Knex from 'knex';
+import { Knex } from 'knex';
 import { connect } from './connection';
 import * as knexOpts from '../test/knexfile';
 

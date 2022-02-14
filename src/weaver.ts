@@ -1,6 +1,6 @@
 import Debug from 'debug';
-import Knex from 'knex';
-import { FastCache } from '@fastcampus/fastcache';
+import { Knex } from 'knex';
+import { FastCache } from '@day1co/fastcache';
 import { Relation } from './relation';
 
 const debug = Debug('fastdao:weaver');
@@ -10,7 +10,7 @@ export interface WeaverOpts {
   cache?: FastCache;
 }
 
-export class Weaver<ROW extends {} = any> {
+export class Weaver<ID = number, ROW = any> {
   private readonly knex: Knex;
   private readonly cache: FastCache;
   public readonly cacheStat = { hit: 0, miss: 0 };
@@ -27,7 +27,7 @@ export class Weaver<ROW extends {} = any> {
   async weave<T>(rows?: Array<ROW>, relations?: Array<Relation>): Promise<Array<ROW>> {
     if (!rows || rows.length === 0 || !relations || relations.length === 0) {
       // nothing to weave
-      return rows;
+      return [];
     }
     const relationsRows = await Promise.all(
       relations.map((relation) =>
@@ -62,14 +62,15 @@ export class Weaver<ROW extends {} = any> {
     return rows;
   }
 
-  async selectRelationByIds(relation: Relation, ids: Array<ROW>): Promise<Array<ROW>> {
-    const missedIds = [];
-    const hitRows = [];
+  async selectRelationByIds(relation: Relation, ids: Array<ID>): Promise<Array<ROW>> {
+    const missedIds: Array<ID> = [];
+    const hitRows: Array<ROW> = [];
     if (this.cache) {
-      const cached = ids && ids.length ? await this.cache.getAll(ids.map((id) => relation.table + ':' + id)) : [];
+      const cached: Array<string | null> =
+        ids && ids.length ? await this.cache.getAll(ids.map((id) => relation.table + ':' + id)) : [];
       for (let i = 0, count = ids.length; i < count; i += 1) {
-        if (cached[i]) {
-          hitRows.push(JSON.parse(cached[i]));
+        if (cached[i] !== null) {
+          hitRows.push(JSON.parse(<string>cached[i]));
           debug('cache hit:', relation.table, ids[i]);
           this.cacheStat.hit += 1;
         } else {
