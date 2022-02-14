@@ -1,15 +1,8 @@
-import Knex from 'knex';
-import { toCamelCaseKeys, toSnakeCase } from '@fastcampus/fastcase';
-
-declare module 'knex' {
-  interface QueryBuilder {
-    customReplace<TRecord, TResult>(data: any): Knex.QueryBuilder<TRecord, TResult>;
-    customUpsert<TRecord, TResult>(data: any): Knex.QueryBuilder<TRecord, TResult>;
-  }
-}
+import knex, { Knex } from 'knex';
+import { toCamelCaseKeys, toSnakeCase } from '@day1co/fastcase';
 
 // REPLACE INTO table(col1,col2,...) VALUES(val1,val2,...)
-Knex.QueryBuilder.extend('customReplace', function (data) {
+knex.QueryBuilder.extend('customReplace', function (data) {
   return this.client.raw(
     this.insert(data)
       .toString()
@@ -18,7 +11,7 @@ Knex.QueryBuilder.extend('customReplace', function (data) {
 });
 
 // INSERT INTO table(col1,col2,....) VALUES(val1,val2,...) ON DUPLICATE KEY UPDATE col1=val1,col2=val2...;
-Knex.QueryBuilder.extend('customUpsert', function (data, updateData?) {
+knex.QueryBuilder.extend('customUpsert', function (data, updateData?) {
   const upsertClause = /^mysql/i.test(this.client.dialect)
     ? ' ON DUPLICATE KEY UPDATE '
     : ` ON CONFLICT(id) DO UPDATE SET `;
@@ -34,7 +27,7 @@ const postProcessResponse = (result) => toCamelCaseKeys(result);
 const wrapIdentifier = (value, dialectImpl) => dialectImpl(toSnakeCase(value));
 
 export const connect = (config: Knex.Config): Knex => {
-  const knex = Knex({ ...config, postProcessResponse, wrapIdentifier });
-  process.on('exit', () => knex.destroy());
-  return knex;
+  const knexInstance = knex({ ...config, postProcessResponse, wrapIdentifier });
+  process.on('exit', () => knexInstance.destroy());
+  return knexInstance;
 };

@@ -1,4 +1,4 @@
-import * as Knex from 'knex';
+import { Knex } from 'knex';
 
 import { SortOrder, Sort, parseSorts } from './sort';
 import { Relation, parseRelations } from './relation';
@@ -38,11 +38,11 @@ export interface SelectOperations<ID = number, ROW = any> {
 
   count(filter?: CrudFilter<ID, ROW>): Promise<number>;
 
-  selectFirst(filter?: CrudFilter<ID, ROW>, sorts?: Array<Sort>, relations?: Array<Relation>): Promise<ROW>;
+  selectFirst(filter?: CrudFilter<ID, ROW>, sorts?: Array<Sort>, relations?: Array<Relation>): Promise<ROW | undefined>;
 
   exist(filter?: CrudFilter<ID, ROW>): Promise<boolean>;
 
-  selectById(id: ID, relations?: Array<Relation>): Promise<ROW>;
+  selectById(id: ID, relations?: Array<Relation>): Promise<ROW | undefined>;
 }
 
 export interface InsertOperations<ID = number, ROW = any> {
@@ -71,7 +71,8 @@ export class CrudOperations<ID = number, ROW = any>
     InsertOperations<ID, ROW>,
     UpdateOperations<ID, ROW>,
     DeleteOperations<ID, ROW>,
-    Transacting<ID, ROW> {
+    Transacting<ID, ROW>
+{
   public static create<ID, ROW>(opts: CrudOperationsOpts<ID, ROW>) {
     return new CrudOperations(opts);
   }
@@ -105,17 +106,15 @@ export class CrudOperations<ID = number, ROW = any>
       .modify((queryBuilder) => {
         this.applyFilter(queryBuilder, filter);
         this.applySort(queryBuilder, sorts);
-        if (filter) {
-          if (filter.offset > 0) {
-            queryBuilder.offset(filter.offset);
-          }
-          if (filter.limit > 0) {
-            queryBuilder.limit(filter.limit);
-          }
+        if (filter?.offset !== undefined && filter?.offset > 0) {
+          queryBuilder.offset(filter?.offset);
+        }
+        if (filter?.limit !== undefined && filter?.limit > 0) {
+          queryBuilder.limit(filter?.limit);
         }
       })
-      .select(filter?.projection);
-    if (relations && relations.length > 0) {
+      .select(filter?.projection as any);
+    if (relations && relations.length > 0 && this.weaver) {
       return this.weaver.weave(await rows, relations);
     }
     return rows;
@@ -145,7 +144,7 @@ export class CrudOperations<ID = number, ROW = any>
   }
 
   async selectById(id: ID, relations?: Array<Relation>): Promise<ROW | undefined> {
-    return this.selectFirst({ include: { [this.idColumn]: id } }, null, relations);
+    return this.selectFirst({ include: { [this.idColumn]: id } }, undefined, relations);
   }
 
   //---------------------------------------------------------
@@ -222,7 +221,7 @@ export class CrudOperations<ID = number, ROW = any>
     if (exclude) {
       for (const [key, value] of Object.entries(exclude)) {
         if (canExactMatch(value)) {
-          queryBuilder.whereNot(this.columnName(key), value);
+          queryBuilder.whereNot(this.columnName(key), value as any);
         } else if (canExactMatchIn(value)) {
           queryBuilder.whereNotIn(this.columnName(key), value as Array<any>);
         } else if (isNull(value)) {
@@ -233,7 +232,7 @@ export class CrudOperations<ID = number, ROW = any>
     if (include) {
       for (const [key, value] of Object.entries(include)) {
         if (canExactMatch(value)) {
-          queryBuilder.where(this.columnName(key), value);
+          queryBuilder.where(this.columnName(key), value as any);
         } else if (canExactMatchIn(value)) {
           queryBuilder.whereIn(this.columnName(key), value as Array<any>);
         } else if (isNull(value)) {
@@ -242,16 +241,16 @@ export class CrudOperations<ID = number, ROW = any>
       }
     }
     if (canExactMatch(min)) {
-      queryBuilder.where(this.columnName(this.idColumn), '>=', min);
+      queryBuilder.where(this.columnName(this.idColumn), '>=', min as any);
     }
     if (canExactMatch(max)) {
-      queryBuilder.where(this.columnName(this.idColumn), '<', max);
+      queryBuilder.where(this.columnName(this.idColumn), '<', max as any);
     }
     if (canExactMatch(since)) {
-      queryBuilder.where(this.columnName(this.createdAtColumn), '>=', since);
+      queryBuilder.where(this.columnName(this.createdAtColumn), '>=', since as any);
     }
     if (canExactMatch(until)) {
-      queryBuilder.where(this.columnName(this.updatedAtColumn), '<', until);
+      queryBuilder.where(this.columnName(this.updatedAtColumn), '<', until as any);
     }
   }
 
@@ -270,7 +269,7 @@ export class CrudOperations<ID = number, ROW = any>
     }
   }
 
-  protected columnName(name) {
+  protected columnName(name: string): string {
     return `${this.table}.${name}`;
   }
 }
