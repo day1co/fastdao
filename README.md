@@ -2,13 +2,13 @@
 
 fast and simple dao using [knex](http://knexjs.org/)
 
-[![npm version](https://badge.fury.io/js/%40fastcampus%2Ffastdao.svg)](https://badge.fury.io/js/%40fastcampus%2Ffastdao)
+![version](https://img.shields.io/github/package-json/v/day1co/fastdao)
 
 ## Getting Started
 
 ```js
-// const = { connect, CrudOperations } = require('@fastcampus/fastdao');
-import { connect, CrudOperations } from '@fastcampus/fastdao';
+// const = { connect, CrudOperations } = require('@day1co/fastdao');
+import { connect, CrudOperations } from '@day1co/fastdao';
 
 const knex = connect({ ...  });
 // to use a separated connection for select
