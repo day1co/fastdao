@@ -1,5 +1,5 @@
-import redisMock from 'redis-mock';
-import { FastCache } from '@fastcampus/fastcache';
+import IORedisMock from 'ioredis-mock';
+import { FastCache } from '@day1co/fastcache';
 import { connect } from './connection';
 import { Weaver } from './weaver';
 import { parseRelations } from './relation';
@@ -12,7 +12,7 @@ const KNEX_OPTS = {
   useNullAsDefault: true,
 };
 
-const cache = FastCache.create({ redis: {}, createRedisClient: redisMock.createClient });
+const cache = FastCache.create({ redis: {}, createRedisClient: () => new IORedisMock() });
 
 describe('weaver', () => {
   let knex;
@@ -42,12 +42,10 @@ describe('weaver', () => {
     });
     it('should weave nothing', async () => {
       const rr = Weaver.create({ knex, cache });
-      expect(await rr.weave()).toBeUndefined();
-      expect(await rr.weave(undefined, [])).toBeUndefined();
-      expect(await rr.weave(null, [])).toBeNull();
+      expect(await rr.weave()).toEqual([]);
+      expect(await rr.weave(undefined, [])).toEqual([]);
       expect(await rr.weave([])).toEqual([]);
       expect(await rr.weave([], parseRelations('foo,bar,baz,qux'))).toEqual([]);
-      expect(await rr.weave([], null)).toEqual([]);
       expect(await rr.weave([], [])).toEqual([]);
     });
     it('should throw', async () => {

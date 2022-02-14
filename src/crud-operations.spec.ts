@@ -1,6 +1,6 @@
-import redisMock from 'redis-mock';
-import { FastCache } from '@fastcampus/fastcache';
-import * as Knex from 'knex';
+import IORedisMock from 'ioredis-mock';
+import { FastCache } from '@day1co/fastcache';
+import { Knex } from 'knex';
 import { connect } from './connection';
 import { Weaver } from './weaver';
 import { parseSorts } from './sort';
@@ -8,7 +8,7 @@ import { parseRelations } from './relation';
 import { CrudOperations } from './crud-operations';
 import * as knexOpts from '../test/knexfile';
 
-const cache = FastCache.create({ redis: {}, createRedisClient: redisMock.createClient });
+const cache = FastCache.create({ redis: {}, createRedisClient: () => new IORedisMock() });
 
 describe('crud-operations', () => {
   let knex: Knex;
@@ -64,11 +64,11 @@ describe('crud-operations', () => {
       expect(rows).toMatchObject(await knex('post').whereIn('id', [2, 3]).select());
     });
     it('should select with sort', async () => {
-      const rows = await postCrud.select(null, parseSorts('-id'));
+      const rows = await postCrud.select(undefined, parseSorts('-id'));
       expect(rows).toMatchObject(await knex('post').orderBy('id', 'DESC').select());
     });
     it('should select with relations', async () => {
-      const rows = await postCrud.select(null, null, parseRelations('forum,user'));
+      const rows = await postCrud.select(undefined, undefined, parseRelations('forum,user'));
       for (const row of rows) {
         expect(row.forum).toEqual(await knex('forum').where({ id: row.forum.id }).first());
         expect(row.user).toEqual(await knex('user').where({ id: row.user.id }).first());
