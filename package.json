@@ -28,11 +28,8 @@
     "eslint": "^8.9.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "ioredis": "^4.28.5",
     "ioredis-mock": "^7.0.0",
     "jest": "^27.5.1",
-    "knex": "^1.0.3",
-    "mysql2": "^2.3.3",
     "prettier": "^2.5.1",
     "ts-jest": "^27.1.3",
     "ts-node": "^10.5.0",
@@ -40,6 +37,9 @@
   },
   "dependencies": {
     "@day1co/fastcache": "^3.0.2",
-    "@day1co/fastcase": "^3.0.0"
+    "@day1co/fastcase": "^3.0.0",
+    "ioredis": "^4.28.5",
+    "knex": "^1.0.3",
+    "mysql2": "^2.3.3"
   }
 }
