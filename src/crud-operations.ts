@@ -23,6 +23,15 @@ export interface CrudFilter<ID = number, ROW = any> {
   projection?: Array<string>;
 }
 
+type CrudFilterColumns<T> = {
+  [K in keyof T]?: T[K] | [T[K]];
+};
+
+export interface StrictTypedCrudFilter<ID = number, ROW = any> extends CrudFilter<ID, ROW> {
+  include?: CrudFilterColumns<ROW>;
+  exclude?: CrudFilterColumns<ROW>;
+}
+
 export interface CrudOperationsOpts<ID = number, ROW = any> {
   knex: Knex; // 읽기/쓰기 연결
   knexReplica?: Knex; // 읽기 전용 연결
