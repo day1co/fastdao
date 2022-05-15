@@ -24,7 +24,7 @@ export interface CrudFilter<ID = number, ROW = any> {
 }
 
 type CrudFilterColumns<T> = {
-  [K in keyof T]?: T[K] | [T[K]];
+  [K in keyof T]?: T[K] | T[K][];
 };
 
 export interface StrictTypedCrudFilter<ID = number, ROW = any> extends CrudFilter<ID, ROW> {
