@@ -1,5 +1,5 @@
 export { connect } from './connection';
-export { CrudOperations, CrudOperationsOpts, CrudFilter } from './crud-operations';
+export { CrudOperations, CrudOperationsOpts, CrudFilter, StrictTypedCrudFilter } from './crud-operations';
 export { Sort, SortOrder, sort, sortAsc, sortDesc, parseSort, parseSorts } from './sort';
 export { Relation, relation, parseRelation, parseRelations } from './relation';
 export { Weaver, WeaverOpts } from './weaver';
