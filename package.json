@@ -1,6 +1,6 @@
 {
   "name": "@day1co/fastdao",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "fast and simple dao using knex",
   "url": "https://github.com/day1co/fastdao",
   "repository": "https://github.com/day1co/fastdao",
