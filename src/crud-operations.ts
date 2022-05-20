@@ -23,7 +23,7 @@ export interface CrudFilter<ID = number, ROW = any> {
   projection?: Array<string>;
 }
 
-type CrudFilterColumns<T> = {
+export type CrudFilterColumns<T> = {
   [K in keyof T]?: T[K] | T[K][];
 };
 
