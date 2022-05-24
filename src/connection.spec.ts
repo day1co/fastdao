@@ -1,3 +1,4 @@
+import { Knex } from 'knex';
 import { connect } from './connection';
 import * as knexOpts from '../test/knexfile';
 
@@ -12,7 +13,7 @@ describe('connection', () => {
 });
 
 describe('knex extension for mysql', () => {
-  let knex;
+  let knex: Knex;
 
   beforeAll(async () => {
     knex = connect(knexOpts);

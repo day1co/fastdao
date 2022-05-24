@@ -33,7 +33,7 @@ export function parseSort(s: string): Sort {
   }
   return {
     column: match[2],
-    order: SORT_ORDER_PREFIX[match[1]] || SortOrder.DEFAULT,
+    order: match[1] === '+' || match[1] === '-' ? SORT_ORDER_PREFIX[match[1]] : SortOrder.DEFAULT,
   };
 }
 

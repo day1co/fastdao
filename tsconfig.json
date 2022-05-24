@@ -1,16 +1,37 @@
+// {
+//   "extends": "@tsconfig/node16/tsconfig.json",
+//   "compilerOptions": {
+//     "allowSyntheticDefaultImports": true,
+//     "allowJs": true,
+//     "checkJs": true,
+//     "newLine": "lf",
+//     "declaration": true,
+//     "noImplicitAny": false,
+//     "moduleResolution": "node",
+//     "sourceMap": true,
+//     "outDir": "lib"
+//   },
+//   "include": ["src"],
+//   "exclude": ["node_modules", "**/*.spec.ts"]
+// }
 {
-  "extends": "@tsconfig/node16/tsconfig.json",
   "compilerOptions": {
-    "allowSyntheticDefaultImports": true,
-    "allowJs": true,
-    "checkJs": true,
-    "newLine": "lf",
-    "declaration": true,
-    "noImplicitAny": false,
+    "allowUnreachableCode": false,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "strict": true,
+    "module": "commonjs",
     "moduleResolution": "node",
+    "types": ["jest"],
+    "declaration": true,
+    "newLine": "lf",
+    "outDir": "./lib",
     "sourceMap": true,
-    "outDir": "lib"
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "target": "es2017",
+    "skipLibCheck": true
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "**/*.spec.ts"]
+  "include": ["./src"],
+  "exclude": ["./lib", "./node_modules"]
 }

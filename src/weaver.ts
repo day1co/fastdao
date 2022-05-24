@@ -1,30 +1,32 @@
-import Debug from 'debug';
 import { Knex } from 'knex';
 import { FastCache } from '@day1co/fastcache';
+import { LoggerFactory } from '@day1co/pebbles';
+import type { Logger } from '@day1co/pebbles';
+import { IdType, RowType } from './crud.type';
 import { Relation } from './relation';
-
-const debug = Debug('fastdao:weaver');
 
 export interface WeaverOpts {
   knex: Knex;
   cache?: FastCache;
 }
 
-export class Weaver<ID = number, ROW = any> {
+export class Weaver<ID extends IdType = number, ROW extends RowType = RowType> {
   private readonly knex: Knex;
   private readonly cache: FastCache;
+  private readonly logger: Logger;
   public readonly cacheStat = { hit: 0, miss: 0 };
 
-  static create(opts: WeaverOpts) {
-    return new Weaver(opts);
+  static create<ID extends IdType = number, ROW extends RowType = RowType>(opts: WeaverOpts) {
+    return new Weaver<ID, ROW>(opts);
   }
 
   private constructor(opts: WeaverOpts) {
     this.knex = opts.knex;
     this.cache = opts.cache || FastCache.create();
+    this.logger = LoggerFactory.getLogger('fastdao:weaver');
   }
 
-  async weave<T>(rows?: Array<ROW>, relations?: Array<Relation>): Promise<Array<ROW>> {
+  async weave(rows?: Array<ROW>, relations?: Array<Relation>): Promise<Array<ROW>> {
     if (!rows || rows.length === 0 || !relations || relations.length === 0) {
       // nothing to weave
       return [];
@@ -38,7 +40,7 @@ export class Weaver<ID = number, ROW = any> {
       )
     );
     for (let rowIndex = 0, rowCount = rows.length; rowIndex < rowCount; rowIndex += 1) {
-      const row = rows[rowIndex];
+      const row: RowType = rows[rowIndex];
       for (let relationIndex = 0, relationCount = relations.length; relationIndex < relationCount; relationIndex += 1) {
         const relation = relations[relationIndex];
         const fkValue = row[relation.fk];
@@ -71,11 +73,11 @@ export class Weaver<ID = number, ROW = any> {
       for (let i = 0, count = ids.length; i < count; i += 1) {
         if (cached[i] !== null) {
           hitRows.push(JSON.parse(<string>cached[i]));
-          debug('cache hit:', relation.table, ids[i]);
+          this.logger.debug(`cache hit: ${relation.table}, id=${ids[i]}`);
           this.cacheStat.hit += 1;
         } else {
           missedIds.push(ids[i]);
-          debug('cache miss:', relation.table, ids[i]);
+          this.logger.warn(`cache miss: ${relation.table}, id=${ids[i]}`);
           this.cacheStat.miss += 1;
         }
       }
@@ -92,16 +94,17 @@ export class Weaver<ID = number, ROW = any> {
         }, {});
         this.cache
           .setAll(cacheItems)
-          .then((result) => debug('cache setAll ok', result))
-          .catch((err) => debug('cache setAll err', err));
+          .then((result) => this.logger.debug('cache setAll ok: %o', result))
+          .catch((err) => this.logger.error('cache setAll err: %o', err));
       });
     }
-    // debug('cache stat:', cacheStat);
+    // this.logger.debug('cache stat: %o', this.cacheStat);
     return hitRows.concat(result);
   }
 
   async flushCache(table: string, id = '*') {
-    debug('flush cache:', table + ':' + id);
-    return this.cache.flush(table + ':' + id);
+    const pattern = `${table}:${id}`;
+    this.logger.debug(`flush cache: ${pattern}`);
+    return this.cache.flush(pattern);
   }
 }

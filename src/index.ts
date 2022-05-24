@@ -1,12 +1,11 @@
 export { connect } from './connection';
-export {
-  CrudOperations,
-  CrudOperationsOpts,
-  CrudFilter,
-  StrictTypedCrudFilter,
-  CrudFilterColumns,
-} from './crud-operations';
-export { Sort, SortOrder, sort, sortAsc, sortDesc, parseSort, parseSorts } from './sort';
-export { Relation, relation, parseRelation, parseRelations } from './relation';
-export { Weaver, WeaverOpts } from './weaver';
-export { ExtraOperations, ExtraOperationsOpts } from './extra-operations';
+export { CrudOperations } from './crud-operations';
+export type { CrudFilter, CrudFilterColumns, CrudOperationsOpts, StrictTypedCrudFilter } from './crud-operations';
+export { SortOrder, sort, sortAsc, sortDesc, parseSort, parseSorts } from './sort';
+export type { Sort } from './sort';
+export { relation, parseRelation, parseRelations } from './relation';
+export type { Relation } from './relation';
+export { Weaver } from './weaver';
+export type { WeaverOpts } from './weaver';
+export { ExtraOperations } from './extra-operations';
+export type { ExtraOperationsOpts } from './extra-operations';
