@@ -1,4 +1,5 @@
 export { connect } from './connection';
+export type { IdType, RowType } from './crud.type';
 export { CrudOperations } from './crud-operations';
 export type { CrudFilter, CrudFilterColumns, CrudOperationsOpts, StrictTypedCrudFilter } from './crud-operations';
 export { SortOrder, sort, sortAsc, sortDesc, parseSort, parseSorts } from './sort';
