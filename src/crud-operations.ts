@@ -11,8 +11,8 @@ export interface CrudFilter<ID extends IdType = number, ROW extends RowType = Ro
   // for exact mismatch
   exclude?: ROW;
   //id: ID;
-  //type: any;
-  //state: any;
+  //type: unknown;
+  //state: unknown;
   min?: ID;
   max?: ID;
   since?: Date | string;
@@ -29,7 +29,7 @@ export type CrudFilterColumns<T> = {
 };
 
 /** @deprecated */
-export interface StrictTypedCrudFilter<ID extends IdType, ROW = any> extends CrudFilter<ID> {
+export interface StrictTypedCrudFilter<ID extends IdType, ROW = unknown> extends CrudFilter<ID> {
   include?: CrudFilterColumns<ROW>;
   exclude?: CrudFilterColumns<ROW>;
 }
@@ -240,7 +240,7 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
         if (canExactMatch(value)) {
           queryBuilder.whereNot(this.columnName(key), value);
         } else if (canExactMatchIn(value)) {
-          queryBuilder.whereNotIn(this.columnName(key), value as Array<any>);
+          queryBuilder.whereNotIn(this.columnName(key), value);
         } else if (isNull(value)) {
           queryBuilder.whereNotNull(this.columnName(key));
         }
@@ -251,7 +251,7 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
         if (canExactMatch(value)) {
           queryBuilder.where(this.columnName(key), value);
         } else if (canExactMatchIn(value)) {
-          queryBuilder.whereIn(this.columnName(key), value as Array<any>);
+          queryBuilder.whereIn(this.columnName(key), value);
         } else if (isNull(value)) {
           queryBuilder.whereNull(this.columnName(key));
         }
