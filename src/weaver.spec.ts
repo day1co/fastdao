@@ -1,8 +1,9 @@
 import IORedisMock from 'ioredis-mock';
+import { Knex } from 'knex';
 import { FastCache } from '@day1co/fastcache';
 import { connect } from './connection';
-import { Weaver } from './weaver';
 import { parseRelations } from './relation';
+import { Weaver } from './weaver';
 
 const KNEX_OPTS = {
   client: 'sqlite3',
@@ -15,7 +16,7 @@ const KNEX_OPTS = {
 const cache = FastCache.create({ redis: {}, createRedisClient: () => new IORedisMock() });
 
 describe('weaver', () => {
-  let knex;
+  let knex: Knex;
 
   beforeAll(async () => {
     knex = connect(KNEX_OPTS);
@@ -50,7 +51,7 @@ describe('weaver', () => {
     });
     it('should throw', async () => {
       const rr = Weaver.create({ knex, cache });
-      await expect(rr.weave(knex('comment').select(), parseRelations('not_found'))).rejects.toThrow();
+      await expect(rr.weave(await knex('comment').select(), parseRelations('not_found'))).rejects.toThrow();
     });
   });
 });

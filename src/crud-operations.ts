@@ -1,15 +1,15 @@
 import { Knex } from 'knex';
-
-import { SortOrder, Sort, parseSorts } from './sort';
-import { Relation, parseRelations } from './relation';
-import { Weaver } from './weaver';
+import type { IdType, RowType } from './crud.type';
+import { Relation } from './relation';
+import { SortOrder, Sort } from './sort';
 import { canExactMatch, canExactMatchIn, isNull } from './util';
+import { Weaver } from './weaver';
 
-export interface CrudFilter<ID = number, ROW = any> {
+export interface CrudFilter<ID extends IdType = number, ROW extends RowType = RowType> {
   // for exact match
-  include?: any;
+  include?: ROW;
   // for exact mismatch
-  exclude?: any;
+  exclude?: ROW;
   //id: ID;
   //type: any;
   //state: any;
@@ -23,26 +23,28 @@ export interface CrudFilter<ID = number, ROW = any> {
   projection?: Array<string>;
 }
 
+/** @deprecated */
 export type CrudFilterColumns<T> = {
   [K in keyof T]?: T[K] | T[K][];
 };
 
-export interface StrictTypedCrudFilter<ID = number, ROW = any> extends CrudFilter<ID, ROW> {
+/** @deprecated */
+export interface StrictTypedCrudFilter<ID extends IdType, ROW = any> extends CrudFilter<ID> {
   include?: CrudFilterColumns<ROW>;
   exclude?: CrudFilterColumns<ROW>;
 }
 
-export interface CrudOperationsOpts<ID = number, ROW = any> {
+export interface CrudOperationsOpts<ID extends IdType = number, ROW extends RowType = RowType> {
   knex: Knex; // 읽기/쓰기 연결
   knexReplica?: Knex; // 읽기 전용 연결
   table: string;
   idColumn?: string;
   createdAtColumn?: string;
   updatedAtColumn?: string;
-  weaver?: Weaver;
+  weaver?: Weaver<ID, ROW>;
 }
 
-export interface SelectOperations<ID = number, ROW = any> {
+export interface SelectOperations<ID extends IdType, ROW extends RowType> {
   select(filter?: CrudFilter<ID, ROW>, sorts?: Array<Sort>, relations?: Array<Relation>): Promise<Array<ROW>>;
 
   count(filter?: CrudFilter<ID, ROW>): Promise<number>;
@@ -54,36 +56,38 @@ export interface SelectOperations<ID = number, ROW = any> {
   selectById(id: ID, relations?: Array<Relation>): Promise<ROW | undefined>;
 }
 
-export interface InsertOperations<ID = number, ROW = any> {
+export interface InsertOperations<ROW extends RowType> {
   insert(data: ROW | Array<ROW>): Promise<ROW>;
 }
 
-export interface UpdateOperations<ID = number, ROW = any> {
+export interface UpdateOperations<ID extends IdType, ROW extends RowType> {
   updateById(id: ID, data: ROW): Promise<number>;
 
   update(filter: CrudFilter<ID, ROW>, data: ROW): Promise<number>;
 }
 
-export interface DeleteOperations<ID = number, ROW = any> {
+export interface DeleteOperations<ID extends IdType, ROW extends RowType> {
   deleteById(id: ID): Promise<number>;
 
   delete(filter: CrudFilter<ID, ROW>): Promise<number>;
 }
 
-interface Transacting<ID = number, ROW = any> {
+interface Transacting<ID extends IdType, ROW extends RowType> {
   transacting(tx: Knex.Transaction): CrudOperations<ID, ROW>;
 }
 
-export class CrudOperations<ID = number, ROW = any>
+export class CrudOperations<ID extends IdType = number, ROW extends RowType = RowType>
   implements
     SelectOperations<ID, ROW>,
-    InsertOperations<ID, ROW>,
+    InsertOperations<ROW>,
     UpdateOperations<ID, ROW>,
     DeleteOperations<ID, ROW>,
     Transacting<ID, ROW>
 {
-  public static create<ID, ROW>(opts: CrudOperationsOpts<ID, ROW>) {
-    return new CrudOperations(opts);
+  [x: string | symbol]: unknown; // XXX: transacting 구현에서의 컴파일 에러를 막기 위한 코드
+
+  public static create<ID extends IdType = number, ROW extends RowType = RowType>(opts: CrudOperationsOpts<ID, ROW>) {
+    return new CrudOperations<ID, ROW>(opts);
   }
 
   public readonly knex: Knex | Knex.Transaction;
@@ -92,7 +96,7 @@ export class CrudOperations<ID = number, ROW = any>
   private readonly idColumn: string;
   private readonly createdAtColumn: string;
   private readonly updatedAtColumn: string;
-  private readonly weaver?: Weaver;
+  private readonly weaver?: Weaver<ID, ROW>;
 
   private constructor(opts: CrudOperationsOpts<ID, ROW>) {
     // main connection for read/write
@@ -110,19 +114,23 @@ export class CrudOperations<ID = number, ROW = any>
   //---------------------------------------------------------
   // SelectOperation
 
-  async select(filter?: CrudFilter<ID, ROW>, sorts?: Array<Sort>, relations?: Array<Relation>): Promise<Array<ROW>> {
-    const rows = this.knexReplica(this.table)
-      .modify((queryBuilder) => {
-        this.applyFilter(queryBuilder, filter);
-        this.applySort(queryBuilder, sorts);
-        if (filter?.offset !== undefined && filter?.offset > 0) {
-          queryBuilder.offset(filter?.offset);
-        }
-        if (filter?.limit !== undefined && filter?.limit > 0) {
-          queryBuilder.limit(filter?.limit);
-        }
-      })
-      .select(filter?.projection as any);
+  async select(
+    filter?: CrudFilter<ID, RowType>,
+    sorts?: Array<Sort>,
+    relations?: Array<Relation>
+  ): Promise<Array<ROW>> {
+    const query = this.knexReplica(this.table).modify((queryBuilder) => {
+      this.applyFilter(queryBuilder, filter);
+      this.applySort(queryBuilder, sorts);
+      if (filter?.offset !== undefined && filter?.offset > 0) {
+        queryBuilder.offset(filter?.offset);
+      }
+      if (filter?.limit !== undefined && filter?.limit > 0) {
+        queryBuilder.limit(filter?.limit);
+      }
+    });
+    const rows = filter?.projection ? query.select(filter.projection) : query.select();
+
     if (relations && relations.length > 0 && this.weaver) {
       return this.weaver.weave(await rows, relations);
     }
@@ -139,7 +147,7 @@ export class CrudOperations<ID = number, ROW = any>
   }
 
   async selectFirst(
-    filter?: CrudFilter<ID, ROW>,
+    filter?: CrudFilter<ID, RowType>,
     sorts?: Array<Sort>,
     relations?: Array<Relation>
   ): Promise<ROW | undefined> {
@@ -222,7 +230,7 @@ export class CrudOperations<ID = number, ROW = any>
   //---------------------------------------------------------
   // extension point
 
-  protected applyFilter(queryBuilder: Knex.QueryBuilder, filter?: CrudFilter<ID, ROW>) {
+  protected applyFilter(queryBuilder: Knex.QueryBuilder, filter?: CrudFilter<ID, RowType>) {
     if (!filter) {
       return;
     }
@@ -230,7 +238,7 @@ export class CrudOperations<ID = number, ROW = any>
     if (exclude) {
       for (const [key, value] of Object.entries(exclude)) {
         if (canExactMatch(value)) {
-          queryBuilder.whereNot(this.columnName(key), value as any);
+          queryBuilder.whereNot(this.columnName(key), value);
         } else if (canExactMatchIn(value)) {
           queryBuilder.whereNotIn(this.columnName(key), value as Array<any>);
         } else if (isNull(value)) {
@@ -241,7 +249,7 @@ export class CrudOperations<ID = number, ROW = any>
     if (include) {
       for (const [key, value] of Object.entries(include)) {
         if (canExactMatch(value)) {
-          queryBuilder.where(this.columnName(key), value as any);
+          queryBuilder.where(this.columnName(key), value);
         } else if (canExactMatchIn(value)) {
           queryBuilder.whereIn(this.columnName(key), value as Array<any>);
         } else if (isNull(value)) {
@@ -250,16 +258,16 @@ export class CrudOperations<ID = number, ROW = any>
       }
     }
     if (canExactMatch(min)) {
-      queryBuilder.where(this.columnName(this.idColumn), '>=', min as any);
+      queryBuilder.where(this.columnName(this.idColumn), '>=', min ? min : null);
     }
     if (canExactMatch(max)) {
-      queryBuilder.where(this.columnName(this.idColumn), '<', max as any);
+      queryBuilder.where(this.columnName(this.idColumn), '<', max ? max : null);
     }
     if (canExactMatch(since)) {
-      queryBuilder.where(this.columnName(this.createdAtColumn), '>=', since as any);
+      queryBuilder.where(this.columnName(this.createdAtColumn), '>=', since ? since : null);
     }
     if (canExactMatch(until)) {
-      queryBuilder.where(this.columnName(this.updatedAtColumn), '<', until as any);
+      queryBuilder.where(this.columnName(this.updatedAtColumn), '<', until ? until : null);
     }
   }
 
@@ -271,6 +279,7 @@ export class CrudOperations<ID = number, ROW = any>
       queryBuilder.orderBy(
         this.columnName(sort.column),
         {
+          [SortOrder.DEFAULT]: 'ASC',
           [SortOrder.ASC]: 'ASC',
           [SortOrder.DESC]: 'DESC',
         }[sort.order]

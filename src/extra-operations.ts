@@ -1,4 +1,6 @@
 import { Knex } from 'knex';
+import type { ObjectType } from '@day1co/pebbles';
+import { IdType } from './crud.type';
 
 export interface ExtraOperationsOpts {
   knex: Knex;
@@ -24,9 +26,9 @@ export interface ExtraOperationsOpts {
  * });
  * ```
  */
-export class ExtraOperations {
-  static create(opts: ExtraOperationsOpts) {
-    return new ExtraOperations(opts);
+export class ExtraOperations<ID extends IdType = number> {
+  static create<ID extends IdType>(opts: ExtraOperationsOpts) {
+    return new ExtraOperations<ID>(opts);
   }
 
   private readonly knex: Knex;
@@ -46,7 +48,7 @@ export class ExtraOperations {
   }
 
   // 개별 조회
-  async selectByName(id, name) {
+  async selectByName(id: ID, name: string) {
     const row = await this.knexReplica(this.table)
       .where({ [this.fkColumn]: id, name })
       .first(this.valueColumn);
@@ -57,7 +59,7 @@ export class ExtraOperations {
   }
 
   // 개별 추가/갱신
-  async upsertExtra(id, name, value) {
+  async upsertExtra(id: ID, name: string, value: unknown) {
     return this.knex(this.table).customReplace({
       [this.fkColumn]: id,
       [this.nameColumn]: name,
@@ -66,7 +68,7 @@ export class ExtraOperations {
   }
 
   // 일괄 병합(추가,갱신만)
-  async mergeExtras(id, extras) {
+  async mergeExtras(id: ID, extras: ObjectType) {
     return this.knex(this.table).customReplace(
       Object.entries(extras).map(([name, value]) => ({
         [this.fkColumn]: id,
@@ -77,9 +79,9 @@ export class ExtraOperations {
   }
 
   // 일괄 조회
-  async selectExtras(id) {
+  async selectExtras(id: ID) {
     const rows = await this.knexReplica(this.table).where(this.fkColumn, id).select(this.nameColumn, this.valueColumn);
-    const result = {};
+    const result: ObjectType = {};
     for (const row of rows) {
       result[row[this.nameColumn]] = row[this.valueColumn];
     }
@@ -87,7 +89,7 @@ export class ExtraOperations {
   }
 
   // 일괄 추가,갱신 그리고 삭제
-  async upsertExtras(id, extras) {
+  async upsertExtras(id: ID, extras: ObjectType) {
     return this.knex.transaction(async (tx) => {
       await this.knex(this.table)
         .transacting(tx)
@@ -107,7 +109,7 @@ export class ExtraOperations {
   }
 
   // 일괄 삭제
-  async deleteExtras(id, names) {
+  async deleteExtras(id: ID, names: string[]) {
     return this.knex(this.table)
       .where((qb) => {
         qb.where(this.fkColumn, id);
