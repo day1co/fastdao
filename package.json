@@ -39,7 +39,7 @@
     "@day1co/fastcache": "^3.0.2",
     "@day1co/fastcase": "^3.0.0",
     "ioredis": "^4.28.5",
-    "knex": "^1.0.3",
+    "knex": "^1.0.7",
     "mysql2": "^2.3.3"
   }
 }
