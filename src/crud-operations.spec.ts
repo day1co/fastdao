@@ -41,9 +41,24 @@ describe('crud-operations', () => {
       const rows = await postCrud.select();
       expect(rows).toMatchObject(await knex('post').select());
     });
-    it('should select with include/exclude filter', async () => {
+    it('should select with include filter', async () => {
+      const rows = await postCrud.select({ include: { id: 2 } });
+      expect(rows).toMatchObject(await knex('post').where('id', 2).select());
+    });
+    it('should select with include filter by normal array', async () => {
+      const rows = await postCrud.select({ include: { id: [1, 2, 3] } });
+      expect(rows).toMatchObject(await knex('post').whereIn('id', [1, 2, 3]).select());
+      expect(rows).toHaveLength(3);
+    });
+    it('should select with include/exclude filter by normal array', async () => {
       const rows = await postCrud.select({ include: { id: [1, 2, 3] }, exclude: { id: [2] } });
       expect(rows).toMatchObject(await knex('post').whereIn('id', [1, 3]).select());
+      expect(rows).toHaveLength(2);
+    });
+    it.only('should select with include filter by empty array', async () => {
+      const rows = await postCrud.select({ include: { id: [] } });
+      expect(rows).toMatchObject(await knex('post').whereIn('id', []).select());
+      expect(rows).toHaveLength(0);
     });
     it('should select with include/exclude null filter', async () => {
       const rows1 = await postCrud.select({ include: { id: [9, 10], linked_post_id: null } });
