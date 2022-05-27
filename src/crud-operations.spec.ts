@@ -55,7 +55,7 @@ describe('crud-operations', () => {
       expect(rows).toMatchObject(await knex('post').whereIn('id', [1, 3]).select());
       expect(rows).toHaveLength(2);
     });
-    it.only('should select with include filter by empty array', async () => {
+    it('should select with include filter by empty array', async () => {
       const rows = await postCrud.select({ include: { id: [] } });
       expect(rows).toMatchObject(await knex('post').whereIn('id', []).select());
       expect(rows).toHaveLength(0);
