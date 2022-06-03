@@ -61,9 +61,9 @@ export interface InsertOperations<ROW extends RowType> {
 }
 
 export interface UpdateOperations<ID extends IdType, ROW extends RowType> {
-  updateById(id: ID, data: ROW): Promise<number>;
+  updateById(id: ID, data: Partial<ROW>): Promise<number>;
 
-  update(filter: CrudFilter<ID, ROW>, data: ROW): Promise<number>;
+  update(filter: CrudFilter<ID, ROW>, data: Partial<ROW>): Promise<number>;
 }
 
 export interface DeleteOperations<ID extends IdType, ROW extends RowType> {
@@ -185,11 +185,11 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
   //---------------------------------------------------------
   // UpdateOperation
 
-  async updateById(id: ID, data: ROW): Promise<number> {
+  async updateById(id: ID, data: Partial<ROW>): Promise<number> {
     return this.knex(this.table).where(this.idColumn, id).update(data);
   }
 
-  async update(filter: CrudFilter<ID, ROW>, data: ROW): Promise<number> {
+  async update(filter: CrudFilter<ID, ROW>, data: Partial<ROW>): Promise<number> {
     return this.knex(this.table)
       .modify((queryBuilder) => {
         this.applyFilter(queryBuilder, filter);
