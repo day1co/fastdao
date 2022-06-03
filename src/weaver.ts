@@ -73,11 +73,9 @@ export class Weaver<ID extends IdType = number, ROW extends RowType = RowType> {
       for (let i = 0, count = ids.length; i < count; i += 1) {
         if (cached[i] !== null) {
           hitRows.push(JSON.parse(<string>cached[i]));
-          this.logger.debug(`cache hit: ${relation.table}, id=${ids[i]}`);
           this.cacheStat.hit += 1;
         } else {
           missedIds.push(ids[i]);
-          this.logger.warn(`cache miss: ${relation.table}, id=${ids[i]}`);
           this.cacheStat.miss += 1;
         }
       }
