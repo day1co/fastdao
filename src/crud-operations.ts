@@ -98,7 +98,7 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
   private readonly updatedAtColumn: string;
   private readonly weaver?: Weaver<ID, ROW>;
 
-  private constructor(opts: CrudOperationsOpts<ID, ROW>) {
+  protected constructor(opts: CrudOperationsOpts<ID, ROW>) {
     // main connection for read/write
     this.knex = opts.knex;
     // separated connection for read-only

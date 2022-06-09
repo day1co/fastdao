@@ -38,7 +38,7 @@ export class ExtraOperations<ID extends IdType = number> {
   private readonly nameColumn: string;
   private readonly valueColumn: string;
 
-  private constructor(opts: ExtraOperationsOpts) {
+  protected constructor(opts: ExtraOperationsOpts) {
     this.knex = opts.knex;
     this.knexReplica = opts.knexReplica || opts.knex;
     this.table = opts.table;
