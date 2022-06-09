@@ -1,5 +1,4 @@
 import knex, { Knex } from 'knex';
-export { Knex } from 'knex';
 import { toCamelCaseKeys, toSnakeCase } from '@day1co/fastcase';
 
 // REPLACE INTO table(col1,col2,...) VALUES(val1,val2,...)
@@ -32,3 +31,5 @@ export const connect = (config: Knex.Config): Knex => {
   process.on('exit', () => knexInstance.destroy());
   return knexInstance;
 };
+
+export { Knex } from 'knex';
