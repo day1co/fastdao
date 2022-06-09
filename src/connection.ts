@@ -32,4 +32,4 @@ export const connect = (config: Knex.Config): Knex => {
   return knexInstance;
 };
 
-export { Knex } from 'knex';
+export type { Knex } from 'knex';
