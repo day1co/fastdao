@@ -5,11 +5,15 @@ import { SortOrder, Sort } from './sort';
 import { canExactMatch, canExactMatchIn, isNull } from './util';
 import { Weaver } from './weaver';
 
+export type CrudFilterColumns<T> = {
+  [K in keyof T]?: T[K] | T[K][];
+};
+
 export interface CrudFilter<ID extends IdType = number, ROW extends RowType = RowType> {
   // for exact match
-  include?: ROW;
+  include?: CrudFilterColumns<Partial<ROW>>;
   // for exact mismatch
-  exclude?: ROW;
+  exclude?: CrudFilterColumns<Partial<ROW>>;
   //id: ID;
   //type: unknown;
   //state: unknown;
@@ -21,17 +25,6 @@ export interface CrudFilter<ID extends IdType = number, ROW extends RowType = Ro
   limit?: number;
   /** @deprecated */
   projection?: Array<string>;
-}
-
-/** @deprecated */
-export type CrudFilterColumns<T> = {
-  [K in keyof T]?: T[K] | T[K][];
-};
-
-/** @deprecated */
-export interface StrictTypedCrudFilter<ID extends IdType, ROW = unknown> extends CrudFilter<ID> {
-  include?: CrudFilterColumns<ROW>;
-  exclude?: CrudFilterColumns<ROW>;
 }
 
 export interface CrudOperationsOpts<ID extends IdType = number, ROW extends RowType = RowType> {
