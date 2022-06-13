@@ -107,11 +107,7 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
   //---------------------------------------------------------
   // SelectOperation
 
-  async select(
-    filter?: CrudFilter<ID, RowType>,
-    sorts?: Array<Sort>,
-    relations?: Array<Relation>
-  ): Promise<Array<ROW>> {
+  async select(filter?: CrudFilter<ID, ROW>, sorts?: Array<Sort>, relations?: Array<Relation>): Promise<Array<ROW>> {
     const query = this.knexReplica(this.table).modify((queryBuilder) => {
       this.applyFilter(queryBuilder, filter);
       this.applySort(queryBuilder, sorts);
@@ -140,7 +136,7 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
   }
 
   async selectFirst(
-    filter?: CrudFilter<ID, RowType>,
+    filter?: CrudFilter<ID, ROW>,
     sorts?: Array<Sort>,
     relations?: Array<Relation>
   ): Promise<ROW | undefined> {
@@ -154,7 +150,8 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
   }
 
   async selectById(id: ID, relations?: Array<Relation>): Promise<ROW | undefined> {
-    return this.selectFirst({ include: { [this.idColumn]: id } }, undefined, relations);
+    const include = { [this.idColumn]: id } as CrudFilterColumns<Partial<ROW>>;
+    return this.selectFirst({ include }, undefined, relations);
   }
 
   //---------------------------------------------------------
@@ -223,7 +220,7 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
   //---------------------------------------------------------
   // extension point
 
-  protected applyFilter(queryBuilder: Knex.QueryBuilder, filter?: CrudFilter<ID, RowType>) {
+  protected applyFilter(queryBuilder: Knex.QueryBuilder, filter?: CrudFilter<ID, ROW>) {
     if (!filter) {
       return;
     }
