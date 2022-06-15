@@ -11,9 +11,9 @@ export type CrudFilterColumns<T> = {
 
 export interface CrudFilter<ID extends IdType = number, ROW extends RowType = RowType> {
   // for exact match
-  include?: CrudFilterColumns<Partial<ROW>>;
+  include?: CrudFilterColumns<ROW>;
   // for exact mismatch
-  exclude?: CrudFilterColumns<Partial<ROW>>;
+  exclude?: CrudFilterColumns<ROW>;
   //id: ID;
   //type: unknown;
   //state: unknown;
@@ -150,7 +150,7 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
   }
 
   async selectById(id: ID, relations?: Array<Relation>): Promise<ROW | undefined> {
-    const include = { [this.idColumn]: id } as CrudFilterColumns<Partial<ROW>>;
+    const include = { [this.idColumn]: id } as CrudFilterColumns<ROW>;
     return this.selectFirst({ include }, undefined, relations);
   }
 
