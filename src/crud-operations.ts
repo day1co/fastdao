@@ -6,7 +6,7 @@ import { canExactMatch, canExactMatchIn, isNull } from './util';
 import { Weaver } from './weaver';
 
 export type CrudFilterColumns<T> = {
-  [K in keyof T]?: T[K] | T[K][];
+  [K in keyof T]-?: T[K] | T[K][];
 };
 
 export interface CrudFilter<ID extends IdType = number, ROW extends RowType = RowType> {
