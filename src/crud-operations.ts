@@ -38,19 +38,23 @@ export interface CrudOperationsOpts<ID extends IdType = number, ROW extends RowT
 }
 
 export interface SelectOperations<ID extends IdType, ROW extends RowType> {
-  select(filter?: CrudFilter<ID, ROW>, sorts?: Array<Sort>, relations?: Array<Relation>): Promise<Array<ROW>>;
+  select(filter?: CrudFilter<ID, ROW>, sorts?: Array<Sort>, relations?: Array<Relation>): Promise<Array<Required<ROW>>>;
 
   count(filter?: CrudFilter<ID, ROW>): Promise<number>;
 
-  selectFirst(filter?: CrudFilter<ID, ROW>, sorts?: Array<Sort>, relations?: Array<Relation>): Promise<ROW | undefined>;
+  selectFirst(
+    filter?: CrudFilter<ID, ROW>,
+    sorts?: Array<Sort>,
+    relations?: Array<Relation>
+  ): Promise<Required<ROW> | undefined>;
 
   exist(filter?: CrudFilter<ID, ROW>): Promise<boolean>;
 
-  selectById(id: ID, relations?: Array<Relation>): Promise<ROW | undefined>;
+  selectById(id: ID, relations?: Array<Relation>): Promise<Required<ROW> | undefined>;
 }
 
 export interface InsertOperations<ROW extends RowType> {
-  insert(data: ROW | Array<ROW>): Promise<ROW>;
+  insert(data: ROW | Array<ROW>): Promise<Required<ROW>>;
 }
 
 export interface UpdateOperations<ID extends IdType, ROW extends RowType> {
@@ -107,7 +111,11 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
   //---------------------------------------------------------
   // SelectOperation
 
-  async select(filter?: CrudFilter<ID, ROW>, sorts?: Array<Sort>, relations?: Array<Relation>): Promise<Array<ROW>> {
+  async select(
+    filter?: CrudFilter<ID, ROW>,
+    sorts?: Array<Sort>,
+    relations?: Array<Relation>
+  ): Promise<Array<Required<ROW>>> {
     const query = this.knexReplica(this.table).modify((queryBuilder) => {
       this.applyFilter(queryBuilder, filter);
       this.applySort(queryBuilder, sorts);
@@ -139,7 +147,7 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
     filter?: CrudFilter<ID, ROW>,
     sorts?: Array<Sort>,
     relations?: Array<Relation>
-  ): Promise<ROW | undefined> {
+  ): Promise<Required<ROW> | undefined> {
     const rows = await this.select({ ...filter, limit: 1 }, sorts, relations);
     return rows[0];
   }
@@ -149,7 +157,7 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
     return row !== undefined;
   }
 
-  async selectById(id: ID, relations?: Array<Relation>): Promise<ROW | undefined> {
+  async selectById(id: ID, relations?: Array<Relation>): Promise<Required<ROW> | undefined> {
     const include = { [this.idColumn]: id } as CrudFilterColumns<ROW>;
     return this.selectFirst({ include }, undefined, relations);
   }
@@ -157,7 +165,7 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
   //---------------------------------------------------------
   // InsertOperation
 
-  async insert(data: ROW | Array<ROW>): Promise<ROW> {
+  async insert(data: ROW | Array<ROW>): Promise<Required<ROW>> {
     // result is varying on dialect
     // mysql: the first one, sqlite3: the last one, ...
     // see http://knexjs.org/#Builder-insert
