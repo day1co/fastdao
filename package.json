@@ -44,9 +44,9 @@
     "typescript": "^4.5.5"
   },
   "dependencies": {
-    "@day1co/fastcache": "^3.0.2",
+    "@day1co/fastcache": "^3.0.4",
     "@day1co/fastcase": "^3.0.0",
-    "@day1co/pebbles": "~3.1.15",
+    "@day1co/pebbles": "~3.1.27",
     "ioredis": "^4.28.5",
     "knex": "^1.0.7",
     "mysql2": "^2.3.3"
