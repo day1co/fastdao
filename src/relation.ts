@@ -1,14 +1,16 @@
+export type RelationType = 'ONE_TO_MANY';
 export interface Relation {
   table: string;
   column: string;
   fk: string;
   property: string;
+  type?: RelationType;
 }
 
 const defaultFk = (table: string, fk?: string) => fk || `${table}Id`;
 
-export function relation(table: string, column = 'id', fk?: string, property?: string) {
-  return { table, column, fk: fk || defaultFk(table, fk), property: property || table };
+export function relation(table: string, column = 'id', fk?: string, property?: string, type?: RelationType) {
+  return { table, column, fk: fk || defaultFk(table, fk), property: property || table, type };
 }
 
 // ex. `user` === `user.id` === `userId=user.id` === `userId=user.id@user`
