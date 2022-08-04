@@ -54,8 +54,12 @@ export class Weaver<ID extends IdType = number, ROW extends RowType = RowType> {
           ) {
             const relRow = relationRows[relationRowIndex];
             if (fkValue === relRow[relation.column]) {
-              row[relation.property] = relRow;
-              break;
+              if (relation.type === 'ONE_TO_MANY') {
+                row[relation.property] = row[relation.property] ? [...row[relation.property], relRow] : [relRow];
+              } else {
+                row[relation.property] = relRow;
+                break;
+              }
             }
           }
         }
