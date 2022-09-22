@@ -19,6 +19,8 @@ export interface CrudFilter<ID extends IdType = number, ROW extends RowType = Ro
   //state: unknown;
   min?: ID;
   max?: ID;
+  showAt?: Date | string;
+  hideAt?: Date | string;
   since?: Date | string;
   until?: Date | string;
   offset?: number;
@@ -32,6 +34,8 @@ export interface CrudOperationsOpts<ID extends IdType = number, ROW extends RowT
   knexReplica?: Knex; // 읽기 전용 연결
   table: string;
   idColumn?: string;
+  showAtColumn?: string;
+  hideAtColumn?: string;
   createdAtColumn?: string;
   updatedAtColumn?: string;
   weaver?: Weaver<ID, ROW>;
@@ -87,6 +91,8 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
   public readonly knexReplica: Knex | Knex.Transaction;
   public readonly table: string;
   private readonly idColumn: string;
+  private readonly showAtColumn: string;
+  private readonly hideAtColumn: string;
   private readonly createdAtColumn: string;
   private readonly updatedAtColumn: string;
   private readonly weaver?: Weaver<ID, ROW>;
@@ -98,6 +104,8 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
     this.knexReplica = opts.knexReplica || opts.knex;
     this.table = opts.table;
     this.idColumn = opts.idColumn ?? 'id';
+    this.showAtColumn = opts.showAtColumn ?? 'show_at';
+    this.hideAtColumn = opts.hideAtColumn ?? 'hide_at';
     this.createdAtColumn = opts.createdAtColumn ?? 'created_at';
     this.updatedAtColumn = opts.updatedAtColumn ?? 'updated_at';
     // for relations
@@ -224,7 +232,7 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
     if (!filter) {
       return;
     }
-    const { exclude, include, min, max, since, until } = filter;
+    const { exclude, include, min, max, showAt, hideAt, since, until } = filter;
     if (exclude) {
       for (const [key, value] of Object.entries(exclude)) {
         if (canExactMatch(value)) {
@@ -252,6 +260,12 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
     }
     if (canExactMatch(max)) {
       queryBuilder.where(this.columnName(this.idColumn), '<', max ? max : null);
+    }
+    if (canExactMatch(showAt)) {
+      queryBuilder.where(this.columnName(this.showAtColumn), '<=', showAt ? showAt : null);
+    }
+    if (canExactMatch(hideAt)) {
+      queryBuilder.where(this.columnName(this.hideAtColumn), '>=', hideAt ? hideAt : null);
     }
     if (canExactMatch(since)) {
       queryBuilder.where(this.columnName(this.createdAtColumn), '>=', since ? since : null);
