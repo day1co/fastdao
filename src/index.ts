@@ -11,3 +11,8 @@ export { Weaver } from './weaver';
 export type { WeaverOpts } from './weaver';
 export { ExtraOperations } from './extra-operations';
 export type { ExtraOperationsOpts } from './extra-operations';
+
+export { mongoConnect } from './mongo-connection';
+export type { Mongoose } from './mongo-connection';
+export { MongoCrudOperations, Schema } from './mongo-crud-operations';
+export type { MongoCrudOperationsOpts } from './mongo-crud-operations';
