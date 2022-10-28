@@ -1,4 +1,3 @@
-import { Mongoose, Schema } from 'mongoose';
 import type { IdType, RowType } from './crud.type';
 import { Relation } from './relation';
 import { Sort } from './sort';
@@ -7,66 +6,16 @@ import { Weaver } from './weaver';
 
 export { Schema } from 'mongoose';
 
-export type CrudFilterColumns<T> = {
-  [K in keyof T]?: T[K] | T[K][];
-};
-
-export interface CustomObject {
-  [key: string]: any;
-}
-
-export interface CrudFilter<ID extends IdType = number, ROW extends RowType = RowType> {
-  // for exact match
-  include?: CrudFilterColumns<ROW>;
-  // for exact mismatch
-  exclude?: CrudFilterColumns<ROW>;
-  customCondition?: CustomObject;
-  min?: ID;
-  max?: ID;
-  since?: Date | string;
-  until?: Date | string;
-  offset?: number;
-  limit?: number;
-  projection?: Object | String | String[] | null;
-}
-
-export interface MongoCrudOperationsOpts<ID extends IdType = number, ROW extends RowType = RowType> {
-  mongo: Mongoose; // 읽기/쓰기 연결 secondary 설정 포함
-  table: string;
-  schema: Schema;
-  idColumn?: string;
-  createdAtColumn?: string;
-  updatedAtColumn?: string;
-  weaver?: Weaver<ID, ROW>;
-}
-
-export interface SelectOperations<ID extends IdType, ROW extends RowType> {
-  select(filter?: CrudFilter<ID, ROW>, sorts?: Array<Sort>, relations?: Array<Relation>): Promise<Array<ROW>>;
-
-  count(filter?: CrudFilter<ID, ROW>): Promise<number>;
-
-  selectFirst(filter?: CrudFilter<ID, ROW>, sorts?: Array<Sort>, relations?: Array<Relation>): Promise<ROW | undefined>;
-
-  exist(filter?: CrudFilter<ID, ROW>): Promise<boolean>;
-
-  selectById(id: ID, relations?: Array<Relation>): Promise<ROW | undefined>;
-}
-
-export interface InsertOperations<ROW extends RowType> {
-  insert(data: ROW | Array<ROW>): Promise<ROW>;
-}
-
-export interface UpdateOperations<ID extends IdType, ROW extends RowType> {
-  updateById(id: ID, data: Partial<ROW>): Promise<number>;
-
-  update(filter: CrudFilter<ID, ROW>, data: Partial<ROW>): Promise<number>;
-}
-
-export interface DeleteOperations<ID extends IdType, ROW extends RowType> {
-  deleteById(id: ID): Promise<number>;
-
-  delete(filter: CrudFilter<ID, ROW>): Promise<number>;
-}
+import {
+  CustomObject,
+  CrudFilterColumns,
+  CrudFilter,
+  MongoCrudOperationsOpts,
+  SelectOperations,
+  InsertOperations,
+  UpdateOperations,
+  DeleteOperations,
+} from './crud-operations.interface';
 
 export type SelectOptions = {
   limit?: number;
@@ -77,21 +26,13 @@ export type SelectOptions = {
 export class MongoCrudOperations<ID extends IdType = number, ROW extends RowType = RowType>
   implements SelectOperations<ID, ROW>, InsertOperations<ROW>, UpdateOperations<ID, ROW>, DeleteOperations<ID, ROW>
 {
-  [x: string | symbol]: unknown; // XXX: transacting 구현에서의 컴파일 에러를 막기 위한 코드
-
-  public static create<ID extends IdType = number, ROW extends RowType = RowType>(
-    opts: MongoCrudOperationsOpts<ID, ROW>
-  ) {
-    return new MongoCrudOperations<ID, ROW>(opts);
-  }
-
   public readonly model: any;
   private readonly idColumn: string;
   private readonly createdAtColumn: string;
   private readonly updatedAtColumn: string;
   private readonly weaver?: Weaver<ID, ROW>;
 
-  protected constructor(opts: MongoCrudOperationsOpts<ID, ROW>) {
+  constructor(opts: MongoCrudOperationsOpts<ID, ROW>) {
     this.model = opts.mongo.model(opts.table, opts.schema);
     this.idColumn = opts.idColumn ?? '_id';
     this.createdAtColumn = opts.createdAtColumn ?? 'created_at';
@@ -115,7 +56,7 @@ export class MongoCrudOperations<ID extends IdType = number, ROW extends RowType
     if (sorts?.length) options.sort = this.applySort(sorts);
     const convertFilter = filter ? this.applyFilter(filter) : {};
 
-    const projection = filter?.projection;
+    const projection = filter?.projection || {};
     const rows = this.model.find(convertFilter, projection, options);
 
     if (relations && relations.length > 0 && this.weaver) {
@@ -234,9 +175,5 @@ export class MongoCrudOperations<ID extends IdType = number, ROW extends RowType
       result[sort.column] = sort.order;
       return result;
     }, {});
-  }
-
-  protected columnName(name: string): string {
-    return `${this.table}.${name}`;
   }
 }
