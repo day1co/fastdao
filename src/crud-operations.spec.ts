@@ -1,7 +1,7 @@
 import IORedisMock from 'ioredis-mock';
 import { FastCache } from '@day1co/fastcache';
 import { Knex } from 'knex';
-import { connect } from './connection';
+import { connect, knexConnect } from './connection';
 import { Weaver } from './weaver';
 import { parseSorts } from './sort';
 import { parseRelations } from './relation';
@@ -18,7 +18,7 @@ describe('crud-operations', () => {
   let commentCrud: CrudOperations;
 
   beforeAll(async () => {
-    knex = connect(knexOpts);
+    knex = knexConnect(knexOpts);
     await knex.migrate.latest({ directory: './test/migrations' });
 
     const weaver = Weaver.create({ knex, cache });

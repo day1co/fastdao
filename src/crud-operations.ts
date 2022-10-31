@@ -9,6 +9,6 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
   public static create<ID extends IdType = number, ROW extends RowType = RowType>(opts: CrudOperationsOpts<ID, ROW>) {
     if ('knex' in opts) return new MysqlCrudOperations<ID, ROW>(opts);
     if ('mongo' in opts) return new MongoCrudOperations<ID, ROW>(opts);
-    throw Error('연결할 서비스가 없습니다.');
+    throw new Error('연결할 서비스가 없습니다.');
   }
 }

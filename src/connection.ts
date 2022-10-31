@@ -1,12 +1,12 @@
 import 'dotenv/config';
 import mongoose from 'mongoose';
-import type { Mongoose } from 'mongoose';
+import { Mongoose } from 'mongoose';
 import knex, { Knex } from 'knex';
 import { toCamelCaseKeys, toSnakeCase } from '@day1co/fastcase';
+import { IdType, RowType } from './crud.type';
 
-import { MongoConfig, CustomObject, FastDaoConfig } from './connection.interface';
-
-export type { Knex, Mongoose, MongoConfig, FastDaoConfig };
+import { MongoConfig, CustomObject, FastDaoConfig, ConnectManagerOpts } from './connection.interface';
+export { Knex, Mongoose, MongoConfig, FastDaoConfig, ConnectManagerOpts };
 
 const serialize = (obj: CustomObject): string => {
   let str = '';
@@ -66,19 +66,62 @@ export const mongoConnect = (config: MongoConfig): Mongoose => {
   let auth, protocol;
   if (['localhost', '127.0.0.1', '0.0.0.0'].includes(primary.host)) {
     protocol = 'mongodb';
-    auth = `${primary.user}:${primary.password}@`;
   } else {
     auth = ``;
     protocol = 'mongodb+srv';
   }
+  auth = primary.user && primary.password ? `${primary.user}:${primary.password}@` : ``;
   const url = `${protocol}://${auth}${hostString}/${primary.database}${queryString}`;
+
   mongoose.set('bufferCommands', true);
   mongoose.connect(url);
+
   return mongoose;
 };
 
-export const connect = (config: any): Knex | Mongoose | void => {
+/**
+ * 기존 서비스를 위해 유지
+ */
+export const connect = (config: any): Knex | Mongoose => {
   if ('connection' in config) return knexConnect(config);
   if ('primary' in config) return mongoConnect(config);
   throw Error('잘못된 연결 정보 입니다.');
 };
+
+export class ConnectManager {
+  public static getConnection<ID extends IdType = number, ROW extends RowType = RowType>(
+    opts: ConnectManagerOpts<ID, ROW>
+  ): Knex | Mongoose {
+    switch (opts.type) {
+      case 'mysql':
+        if ('connection' in opts.config) {
+          if (opts.custom && opts.config.connection) {
+            const connection = typeof opts.config.connection == 'object' ? opts.config.connection : {};
+            opts.config = {
+              ...opts.config,
+              connection: {
+                ...connection,
+                ...opts.custom,
+              },
+            };
+          }
+          return knexConnect(opts.config);
+        }
+      case 'mongo':
+        if ('primary' in opts.config) {
+          if (opts.custom && opts.config.primary) {
+            const primary = opts.config.primary || {};
+            opts.config = {
+              ...opts.config,
+              primary: {
+                ...primary,
+                ...opts.custom,
+              },
+            };
+          }
+          return mongoConnect(opts.config);
+        }
+    }
+    throw new Error('연결할 서비스가 없습니다.');
+  }
+}
