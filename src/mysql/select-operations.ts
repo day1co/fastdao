@@ -67,7 +67,7 @@ export class SelectOps<ID extends IdType = number, ROW extends RowType = RowType
     return row !== undefined;
   }
 
-  async selectById(id: ID, relations?: Array<Relation>): Promise<ROW | undefined> {
+  async selectById(id: ID | string, relations?: Array<Relation>): Promise<ROW | undefined> {
     const include = { [this.idColumn]: id } as CrudFilterColumns<ROW>;
     return this.selectFirst({ include }, undefined, relations);
   }

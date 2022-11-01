@@ -64,7 +64,7 @@ export interface SelectOperations<ID extends IdType, ROW extends RowType> {
 
   exist(filter?: CrudFilter<ID, ROW>): Promise<boolean>;
 
-  selectById(id: ID, relations?: Array<Relation>): Promise<ROW | undefined>;
+  selectById(id: ID | string, relations?: Array<Relation>): Promise<ROW | undefined>;
 }
 
 export interface InsertOperations<ROW extends RowType> {
