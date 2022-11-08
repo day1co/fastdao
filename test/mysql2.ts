@@ -1,5 +1,5 @@
 const {
-  TEST_MYSQL_HOST = 'localhost',
+  TEST_MYSQL_HOST = '127.0.0.1',
   TEST_MYSQL_PORT = 3306,
   TEST_MYSQL_DATABASE = 'test',
   TEST_MYSQL_USER = 'root',
