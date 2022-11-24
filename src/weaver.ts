@@ -26,7 +26,7 @@ export class Weaver<ID extends IdType = number, ROW extends RowType = RowType> {
     this.logger = LoggerFactory.getLogger('fastdao:weaver');
   }
 
-  async weave(rows?: Array<ROW>, relations?: Array<Relation>): Promise<Array<ROW>> {
+  async weave(rows?: Array<Required<ROW>>, relations?: Array<Relation>): Promise<Array<Required<ROW>>> {
     if (!rows || rows.length === 0 || !relations || relations.length === 0) {
       // nothing to weave
       return [];
@@ -64,9 +64,9 @@ export class Weaver<ID extends IdType = number, ROW extends RowType = RowType> {
     return rows;
   }
 
-  async selectRelationByIds(relation: Relation, ids: Array<ID>): Promise<Array<ROW>> {
+  async selectRelationByIds(relation: Relation, ids: Array<ID>): Promise<Array<Required<ROW>>> {
     const missedIds: Array<ID> = [];
-    const hitRows: Array<ROW> = [];
+    const hitRows: Array<Required<ROW>> = [];
     if (this.cache) {
       const cached: Array<string | null> =
         ids && ids.length ? await this.cache.getAll(ids.map((id) => relation.table + ':' + id)) : [];
