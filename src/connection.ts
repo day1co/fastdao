@@ -24,7 +24,7 @@ knex.QueryBuilder.extend('customUpsert', function (data, updateData?) {
 
 const postProcessResponse = (result: string) => toCamelCaseKeys(result);
 
-const wrapIdentifier = (value: string, dialectImpl: Function) => dialectImpl(toSnakeCase(value));
+const wrapIdentifier = (value: string, dialectImpl: (value: string) => string) => dialectImpl(toSnakeCase(value));
 
 export const connect = (config: Knex.Config): Knex => {
   const knexInstance = knex({ ...config, postProcessResponse, wrapIdentifier });
