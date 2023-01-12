@@ -207,6 +207,7 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
 
   transacting(tx: Knex.Transaction): CrudOperations<ID, ROW> {
     return new Proxy(this, {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       get(target, p, _) {
         // XXX: within transaction, use tx instead of knex/knexReplica
         if (p === 'knex' || p === 'knexReplica') {

@@ -22,7 +22,9 @@ describe('crud-operations', () => {
     await knex.migrate.latest({ directory: './test/migrations' });
 
     const weaver = Weaver.create({ knex, cache });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     userCrud = CrudOperations.create({ knex, table: 'user', weaver });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     forumCrud = CrudOperations.create({ knex, table: 'forum', weaver });
     postCrud = CrudOperations.create({ knex, table: 'post', weaver });
     commentCrud = CrudOperations.create({ knex, table: 'comment', weaver });
