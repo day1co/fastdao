@@ -1,5 +1,7 @@
 import knex, { Knex } from 'knex';
 import { toCamelCaseKeys, toSnakeCase } from '@day1co/fastcase';
+import { LoggerFactory } from '@day1co/pebbles';
+import { createHash } from 'node:crypto';
 
 // REPLACE INTO table(col1,col2,...) VALUES(val1,val2,...)
 knex.QueryBuilder.extend('customReplace', function (data) {
@@ -26,10 +28,33 @@ const postProcessResponse = (result: string) => toCamelCaseKeys(result);
 
 const wrapIdentifier = (value: string, dialectImpl: (value: string) => string) => dialectImpl(toSnakeCase(value));
 
-export const connect = (config: Knex.Config): Knex => {
+const logger = LoggerFactory.getLogger('fastdao:connect');
+
+const dataSourceMap: Record<string, Knex> = {};
+
+// TODO: use explicit data source id rather than generate!
+function generateDataSourceId(config: any) {
+  return createHash('sha256').update(JSON.stringify(config)).digest('base64');
+}
+
+export function connect(config: Knex.Config): Knex {
+  const id = generateDataSourceId(config);
+  const existingDataSource = dataSourceMap[id];
+  if (existingDataSource) {
+    logger.info('re-use exising connection pool(knex instance): %o', config);
+    return existingDataSource;
+  }
   const knexInstance = knex({ ...config, postProcessResponse, wrapIdentifier });
-  process.on('exit', () => knexInstance.destroy());
+  logger.info('create new connection pool(knex instance): %o', config);
+  dataSourceMap[id] = knexInstance;
   return knexInstance;
-};
+}
+
+process.on('exit', () => {
+  logger.info('destroy all connection pools(knex instances)...');
+  for (const knexInstance of Object.values(dataSourceMap)) {
+    knexInstance.destroy();
+  }
+});
 
 export type { Knex } from 'knex';
