@@ -48,9 +48,22 @@
   "dependencies": {
     "@day1co/fastcache": "^3.0.6",
     "@day1co/fastcase": "^3.0.0",
-    "@day1co/pebbles": "~3.1.38",
+    "@day1co/pebbles": "~3.1.38"
+  },
+  "peerDependencies": {
     "ioredis": "^4.28.0",
     "knex": "^2.4.0",
     "mysql2": "^2.3.3"
+  },
+  "peerDependenciesMeta": {
+    "ioredis": {
+      "optional": true
+    },
+    "knex": {
+      "optional": true
+    },
+    "mysql2": {
+      "optional": true
+    }
   }
 }
