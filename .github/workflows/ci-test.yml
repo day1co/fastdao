@@ -18,12 +18,12 @@ jobs:
         with:
           node-version: '18'
       - name: Prepare dot npmrc for private registry
-        run: echo //npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }} >> ~/.npmrc
+        run: echo //npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }} >> ~/.npmrc
       - name: Bootstrap
         if: steps.node-cache.outputs.cache-hit != 'true'
         run: npm ci
         env:
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
       - name: Lint
         run: npm run lint
         env:
