@@ -108,6 +108,10 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
   // SelectOperation
 
   async select(filter?: CrudFilter<ID, ROW>, sorts?: Array<Sort>, relations?: Array<Relation>): Promise<Array<ROW>> {
+    if (!this.isValidFilter(filter)) {
+      return [];
+    }
+
     const query = this.knexReplica(this.table).modify((queryBuilder) => {
       this.applyFilter(queryBuilder, filter);
       this.applySort(queryBuilder, sorts);
@@ -127,6 +131,10 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
   }
 
   async count(filter?: CrudFilter<ID, ROW>): Promise<number> {
+    if (!this.isValidFilter(filter)) {
+      return 0;
+    }
+
     const rows = await this.knexReplica(this.table)
       .modify((queryBuilder) => {
         this.applyFilter(queryBuilder, filter);
@@ -280,5 +288,18 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
 
   protected columnName(name: string): string {
     return `${this.table}.${name}`;
+  }
+
+  protected isValidFilter(filter?: CrudFilter<ID, ROW>) {
+    // 빈배열 검색일 경우 1 = 0 같은 무의미한 조회 방지 필터
+    if (filter?.include) {
+      for (const value of Object.values(filter.include)) {
+        if (Array.isArray(value) && value.length === 0) {
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 }
