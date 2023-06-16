@@ -53,7 +53,7 @@
   "peerDependencies": {
     "ioredis": "^4.28.0",
     "knex": "^2.4.0",
-    "mysql2": "^2.3.3"
+    "mysql2": "^3.3.5"
   },
   "peerDependenciesMeta": {
     "ioredis": {
