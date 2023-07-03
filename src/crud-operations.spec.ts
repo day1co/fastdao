@@ -91,6 +91,31 @@ describe('crud-operations', () => {
         expect(row.user).toEqual(await knex('user').where({ id: row.user.id }).first());
       }
     });
+    it('should select with full contain filter', async () => {
+      const rows = await postCrud.select({ fullContain: { content: 'f1' } });
+      expect(rows).toHaveLength(3);
+      expect(rows).toMatchObject(await knex('post').whereIn('id', [1, 4, 7]).select());
+    });
+    it('should select with left side contain filter', async () => {
+      const rows = await postCrud.select({ leftContain: { content: 'u1' } });
+      expect(rows).toHaveLength(3);
+      expect(rows).toMatchObject(await knex('post').whereIn('id', [1, 2, 3]).select());
+    });
+    it('should select with right side contain filter', async () => {
+      const rows = await postCrud.select({ rightContain: { content: 'p1' } });
+      expect(rows).toHaveLength(2);
+      expect(rows).toMatchObject(await knex('post').whereIn('id', [1, 10]).select());
+    });
+    it('should select with contain filter', async () => {
+      const rows = await postCrud.select({ contain: { content: 'p1' } });
+      expect(rows).toHaveLength(2);
+      expect(rows).toMatchObject(await knex('post').whereIn('id', [1, 10]).select());
+    });
+    it('should select with contain and right side contain filter', async () => {
+      const rows = await postCrud.select({ rightContain: { content: 'p1' }, contain: { content: 'p1' } });
+      expect(rows).toHaveLength(2);
+      expect(rows).toMatchObject(await knex('post').whereIn('id', [1, 10]).select());
+    });
   });
   describe('count', () => {
     it('should count all', async () => {
