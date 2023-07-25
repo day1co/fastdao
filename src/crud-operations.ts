@@ -1,9 +1,12 @@
 import { Knex } from 'knex';
+import { InternalServerException, LoggerFactory } from "@day1co/pebbles";
 import type { IdType, RowType } from './crud.type';
 import { Relation } from './relation';
 import { SortOrder, Sort } from './sort';
 import { canExactMatch, canExactMatchIn, isNull } from './util';
 import { Weaver } from './weaver';
+
+const logger = LoggerFactory.getLogger('fastdao:crud-operation');
 
 export type CrudFilterColumns<T> = {
   [K in keyof T]?: T[K] | T[K][];
@@ -195,6 +198,10 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
   }
 
   async update(filter: CrudFilter<ID, ROW>, data: Partial<ROW>): Promise<number> {
+    if (!filter) {
+      logger.error('Required where condition!!');
+      throw new InternalServerException('Required where condition!');
+    }
     return this.knex(this.table)
       .modify((queryBuilder) => {
         this.applyFilter(queryBuilder, filter);
