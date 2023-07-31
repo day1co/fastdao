@@ -14,6 +14,13 @@ export interface CrudFilter<ID extends IdType = number, ROW extends RowType = Ro
   include?: CrudFilterColumns<ROW>;
   // for exact mismatch
   exclude?: CrudFilterColumns<ROW>;
+  // for left side like match
+  leftContain?: CrudFilterColumns<ROW>;
+  // for right side like match
+  contain?: CrudFilterColumns<ROW>;
+  rightContain?: CrudFilterColumns<ROW>;
+  // for left and right side like match
+  fullContain?: CrudFilterColumns<ROW>;
   //id: ID;
   //type: unknown;
   //state: unknown;
@@ -233,7 +240,7 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
     if (!filter) {
       return;
     }
-    const { exclude, include, min, max, since, until } = filter;
+    const { exclude, include, contain, leftContain, rightContain, fullContain, min, max, since, until } = filter;
     if (exclude) {
       for (const [key, value] of Object.entries(exclude)) {
         if (canExactMatch(value)) {
@@ -253,6 +260,28 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
           queryBuilder.whereIn(this.columnName(key), value);
         } else if (isNull(value)) {
           queryBuilder.whereNull(this.columnName(key));
+        }
+      }
+    }
+    if (fullContain) {
+      for (const [key, value] of Object.entries(fullContain)) {
+        if (canExactMatch(value)) {
+          queryBuilder.whereLike(this.columnName(key), `%${value}%`);
+        }
+      }
+    }
+    if (leftContain) {
+      for (const [key, value] of Object.entries(leftContain)) {
+        if (canExactMatch(value)) {
+          queryBuilder.whereLike(this.columnName(key), `%${value}`);
+        }
+      }
+    }
+    // contain도 강제로 right side like 질의를 시행한다.
+    if (contain || rightContain) {
+      for (const [key, value] of Object.entries({ ...contain, ...rightContain })) {
+        if (canExactMatch(value)) {
+          queryBuilder.whereLike(this.columnName(key), `${value}%`);
         }
       }
     }
