@@ -94,61 +94,65 @@ describe('crud-operations', () => {
     it('should select with full contain filter', async () => {
       const postRows = await postCrud.select({ fullContain: { content: 'f1' } });
       expect(postRows).toHaveLength(3);
-      expect(postRows).toMatchObject(await knex('post').whereLike('content', `%f1%`));
+      expect(postRows).toMatchObject(await knex('post').where('content', 'like', `%f1%`));
       expect(postRows).toMatchObject(await knex('post').whereIn('id', [1, 4, 7]).select());
 
       const forumRows = await forumCrud.select({ fullContain: { description: 'f1' } });
       expect(forumRows).toHaveLength(1);
-      expect(forumRows).toMatchObject(await knex('forum').whereLike('description', '%f1%'));
+      expect(forumRows).toMatchObject(await knex('forum').where('description', 'like', '%f1%'));
       expect(forumRows).toMatchObject(await knex('forum').where({ id: 1 }));
     });
     it('should select with left side contain filter', async () => {
       const rows = await postCrud.select({ leftContain: { content: 'u1' } });
       expect(rows).toHaveLength(3);
-      expect(rows).toMatchObject(await knex('post').whereLike('content', `%u1`));
+      expect(rows).toMatchObject(await knex('post').where('content', 'like', `%u1`));
       expect(rows).toMatchObject(await knex('post').whereIn('id', [1, 2, 3]).select());
 
       const forumRows = await forumCrud.select({ leftContain: { description: 'u1' } });
       expect(forumRows).toHaveLength(1);
-      expect(forumRows).toMatchObject(await knex('forum').whereLike('description', '%u1'));
+      expect(forumRows).toMatchObject(await knex('forum').where('description', 'like', '%u1'));
       expect(forumRows).toMatchObject(await knex('forum').where({ id: 1 }));
     });
     it('should select with right side contain filter', async () => {
       const rows = await postCrud.select({ rightContain: { content: 'p1' } });
       expect(rows).toHaveLength(2);
-      expect(rows).toMatchObject(await knex('post').whereLike('content', `p1%`));
+      expect(rows).toMatchObject(await knex('post').where('content', 'like', `p1%`));
       expect(rows).toMatchObject(await knex('post').whereIn('id', [1, 10]).select());
 
       const forumRows = await forumCrud.select({ rightContain: { description: 'f3' } });
       expect(forumRows).toHaveLength(1);
-      expect(forumRows).toMatchObject(await knex('forum').whereLike('description', 'f3%'));
+      expect(forumRows).toMatchObject(await knex('forum').where('description', 'like', 'f3%'));
       expect(forumRows).toMatchObject(await knex('forum').where({ id: 3 }));
     });
     it('should select with contain filter', async () => {
       const rows = await postCrud.select({ contain: { content: 'p1' } });
       expect(rows).toHaveLength(2);
-      expect(rows).toMatchObject(await knex('post').whereLike('content', `p1%`));
+      expect(rows).toMatchObject(await knex('post').where('content', 'like', `p1%`));
       expect(rows).toMatchObject(await knex('post').whereIn('id', [1, 10]).select());
 
       const forumRows = await forumCrud.select({ contain: { description: 'f3' } });
       expect(forumRows).toHaveLength(1);
-      expect(forumRows).toMatchObject(await knex('forum').whereLike('description', 'f3%'));
+      expect(forumRows).toMatchObject(await knex('forum').where('description', 'like', 'f3%'));
       expect(forumRows).toMatchObject(await knex('forum').where({ id: 3 }));
     });
 
     it('bad use case: should select with contain and right side contain filter', async () => {
       const postRows = await postCrud.select({ rightContain: { content: 'p1' }, contain: { content: 'p1' } });
       expect(postRows).toHaveLength(2);
-      expect(postRows).toMatchObject(await knex('post').whereLike('content', `p1%`));
+      expect(postRows).toMatchObject(await knex('post').where('content', 'like', `p1%`));
       expect(postRows).toMatchObject(await knex('post').whereIn('id', [1, 10]).select());
 
       const postRows2 = await postCrud.select({ rightContain: { content: 'p2' }, contain: { content: 'p1' } });
       expect(postRows2).toHaveLength(0);
-      expect(postRows2).toMatchObject(await knex('post').whereLike('content', `p2%`).whereLike('content', `p1%`));
+      expect(postRows2).toMatchObject(
+        await knex('post').where('content', 'like', `p2%`).where('content', 'like', `p1%`)
+      );
 
       const forumRows = await forumCrud.select({ rightContain: { title: 'f3' }, contain: { description: 'f3' } });
       expect(forumRows).toHaveLength(1);
-      expect(forumRows).toMatchObject(await knex('forum').whereLike('description', 'f3%').whereLike('title', 'f3%'));
+      expect(forumRows).toMatchObject(
+        await knex('forum').where('description', 'like', 'f3%').where('title', 'like', 'f3%')
+      );
       expect(forumRows).toMatchObject(await knex('forum').where({ id: 3 }));
     });
   });
