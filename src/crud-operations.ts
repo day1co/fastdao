@@ -266,21 +266,21 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
     if (fullContain) {
       for (const [key, value] of Object.entries(fullContain)) {
         if (canExactMatch(value)) {
-          queryBuilder.whereLike(this.columnName(key), `%${value}%`);
+          queryBuilder.where(this.columnName(key), 'like', `%${value}%`);
         }
       }
     }
     if (leftContain) {
       for (const [key, value] of Object.entries(leftContain)) {
         if (canExactMatch(value)) {
-          queryBuilder.whereLike(this.columnName(key), `%${value}`);
+          queryBuilder.where(this.columnName(key), 'like', `%${value}`);
         }
       }
     }
     if (rightContain) {
       for (const [key, value] of Object.entries(rightContain)) {
         if (canExactMatch(value)) {
-          queryBuilder.whereLike(this.columnName(key), `${value}%`);
+          queryBuilder.where(this.columnName(key), 'like', `${value}%`);
         }
       }
     }
@@ -288,7 +288,7 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
     if (contain) {
       for (const [key, value] of Object.entries(contain)) {
         if (canExactMatch(value)) {
-          queryBuilder.whereLike(this.columnName(key), `${value}%`);
+          queryBuilder.where(this.columnName(key), 'like', `${value}%`);
         }
       }
     }
