@@ -1,5 +1,5 @@
 import { Knex } from 'knex';
-import { InternalServerException, LoggerFactory } from "@day1co/pebbles";
+import { BadRequestException, LoggerFactory, ObjectUtil } from '@day1co/pebbles';
 import type { IdType, RowType } from './crud.type';
 import { Relation } from './relation';
 import { SortOrder, Sort } from './sort';
@@ -198,9 +198,9 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
   }
 
   async update(filter: CrudFilter<ID, ROW>, data: Partial<ROW>): Promise<number> {
-    if (!filter) {
-      logger.error('Required where condition!!');
-      throw new InternalServerException('Required where condition!');
+    if (ObjectUtil.isEmpty(filter)) {
+      logger.error('Required filter for update!!');
+      throw new BadRequestException('REQUIRED FILTER FOR UPDATE');
     }
     return this.knex(this.table)
       .modify((queryBuilder) => {

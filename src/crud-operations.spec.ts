@@ -1,5 +1,6 @@
 import IORedisMock from 'ioredis-mock';
 import { FastCache } from '@day1co/fastcache';
+import { BadRequestException } from '@day1co/pebbles';
 import { Knex } from 'knex';
 import { connect } from './connection';
 import { Weaver } from './weaver';
@@ -279,6 +280,9 @@ describe('crud-operations', () => {
       expect(updated).toBe(3);
       const rows = await knex('post').where({ forumId: 1 });
       rows.forEach((row) => expect(row.state).toBe('update'));
+    });
+    it('should throw BadRequestException without filter', () => {
+      expect(() => postCrud.update({}, { state: 'update' })).rejects.toThrowError(BadRequestException);
     });
   });
   describe('deleteById', () => {
