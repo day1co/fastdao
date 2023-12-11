@@ -44,7 +44,8 @@ export function connect(config: Knex.Config): Knex {
     logger.info('re-use exising connection pool(knex instance): %o', config);
     return existingDataSource;
   }
-  const knexInstance = knex({ ...config, postProcessResponse, wrapIdentifier });
+  const deepCopyConfig = JSON.parse(JSON.stringify(config));
+  const knexInstance = knex({ ...deepCopyConfig, postProcessResponse, wrapIdentifier });
   logger.info('create new connection pool(knex instance): %o', config);
   dataSourceMap[id] = knexInstance;
   return knexInstance;
