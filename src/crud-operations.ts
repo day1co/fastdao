@@ -328,14 +328,13 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
 
   protected isValidFilter(filter?: CrudFilter<ID, ROW>) {
     // 빈배열 검색일 경우 1 = 0 같은 무의미한 조회 방지 필터
-    if (filter?.include) {
-      for (const value of Object.values(filter.include)) {
-        if (Array.isArray(value) && value.length === 0) {
-          return false;
-        }
+    if (!filter?.include) return true;
+
+    for (const value of Object.values(filter.include)) {
+      if ((Array.isArray(value) && value.length !== 0) || canExactMatch(value)) {
+        return true;
       }
     }
-
-    return true;
+    return false;
   }
 }

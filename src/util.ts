@@ -6,7 +6,7 @@ export const canExactMatchIn = (value: unknown): value is Array<Date | number | 
   // XXX: knex 1.0.x  이후 empty array 에 대해 where in () 대신 where 1 = 0 을 생성하여
   //  항상 where 필터가 동작하도록 변경
   // https://github.com/knex/knex/issues/2897
-  return Array.isArray(value) && value.every((it) => canExactMatch(it));
+  return Array.isArray(value) && value.length !== 0 && value.every((it) => canExactMatch(it));
 };
 
 export const isNull = (value: unknown): value is null => {

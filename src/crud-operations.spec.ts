@@ -62,6 +62,11 @@ describe('crud-operations', () => {
       expect(rows).toMatchObject(await knex('post').whereIn('id', []).select());
       expect(rows).toHaveLength(0);
     });
+    it('should select with include filter by empty array and valid value', async () => {
+      const rows = await postCrud.select({ include: { id: [], forumId: '1' } });
+      expect(rows).toStrictEqual(await knex('post').where('forum_id', 1).select());
+      expect(rows).toHaveLength(3);
+    });
     it('should select with include/exclude null filter', async () => {
       const rows1 = await postCrud.select({ include: { id: [9, 10], linked_post_id: null } });
       expect(rows1).toMatchObject(await knex('post').whereIn('id', [9]).select());
