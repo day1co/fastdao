@@ -1,6 +1,6 @@
 import { Knex } from 'knex';
-import { connect } from './connection';
 import * as knexOpts from '../test/knexfile';
+import { connect } from './connection';
 
 describe('connection', () => {
   describe('connect', () => {

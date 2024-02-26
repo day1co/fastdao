@@ -1,7 +1,7 @@
-import { ExtraOperations } from './extra-operations';
 import { Knex } from 'knex';
-import { connect } from './connection';
 import * as knexOpts from '../test/knexfile';
+import { connect } from './connection';
+import { ExtraOperations } from './extra-operations';
 
 describe('extra-operations', () => {
   let knex: Knex;
