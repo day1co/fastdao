@@ -1,17 +1,18 @@
 import IORedisMock from 'ioredis-mock';
-import { FastCache } from '@day1co/fastcache';
 import { Knex } from 'knex';
-import { connect } from './connection';
-import { Weaver } from './weaver';
-import { parseSorts } from './sort';
-import { parseRelations } from './relation';
-import { CrudOperations } from './crud-operations';
+import { FastCache } from '@day1co/fastcache';
 import * as knexOpts from '../test/knexfile';
+import { connect } from './connection';
+import { CrudOperations } from './crud-operations';
+import { parseRelations } from './relation';
+import { parseSorts } from './sort';
+import { Weaver } from './weaver';
 
 const cache = FastCache.create({ redis: {}, createRedisClient: () => new IORedisMock() });
 
 describe('crud-operations', () => {
   let knex: Knex;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let userCrud: CrudOperations;
   let forumCrud: CrudOperations;
   let postCrud: CrudOperations;

@@ -1,9 +1,9 @@
 import { Knex } from 'knex';
-import type { IdType, RowType } from './crud.type';
 import { Relation } from './relation';
 import { SortOrder, Sort } from './sort';
 import { canExactMatch, canExactMatchIn, isNull } from './util';
 import { Weaver } from './weaver';
+import type { IdType, RowType } from './crud.type';
 
 export type CrudFilterColumns<T> = {
   [K in keyof T]?: T[K] | T[K][];

@@ -51,7 +51,7 @@
     "@day1co/fastcase": "^3.1.1",
     "@day1co/pebbles": "^3.2.7",
     "ioredis": "^5.3.1",
-    "knex": "^2.5.1",
+    "knex": "^2.4.2",
     "mysql2": "^3.3.5"
   },
   "peerDependenciesMeta": {
