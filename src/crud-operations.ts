@@ -30,7 +30,6 @@ export interface CrudFilter<ID extends IdType = number, ROW extends RowType = Ro
   until?: Date | string;
   offset?: number;
   limit?: number;
-  /** @deprecated */
   projection?: Array<string>;
 }
 
