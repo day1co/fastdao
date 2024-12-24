@@ -41,6 +41,27 @@ describe('weaver', () => {
         expect(post.user).toEqual(await knex('user').where({ id: post.userId }).first());
       }
     });
+    it('should weave one-to-many relationships', async () => {
+      const rr = Weaver.create({ knex, cache });
+      const posts = await knex('post').select();
+      const postsWithRels = await rr.weave(posts, [
+        {
+          table: 'postTag',
+          column: 'postId',
+          fk: 'id',
+          property: 'postTag',
+          type: 'ONE_TO_MANY',
+        },
+      ]);
+      for (const post of postsWithRels) {
+        const relationData = await knex('postTag').where({ postId: post.id });
+        if (relationData.length === 0) {
+          expect(post.postTag).toBeUndefined();
+        } else {
+          expect(post.postTag).toMatchObject(relationData);
+        }
+      }
+    });
     it('should weave nothing', async () => {
       const rr = Weaver.create({ knex, cache });
       expect(await rr.weave()).toEqual([]);
