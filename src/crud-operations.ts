@@ -296,17 +296,17 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
     if (idLike) {
       const idLikeTrim = idLike.trim();
       const start = Number(idLikeTrim);
-      
+
       if (!isNaN(start)) {
-          const idLikeLength = idLikeTrim.length;
-          const multiplier = Math.pow(10, 6 - idLikeLength);
-          const end = (start + 1) * multiplier - 1;
-  
-          queryBuilder.whereBetween(this.columnName(this.idColumn), [start, end]);
+        const idLikeLength = idLikeTrim.length;
+        const multiplier = Math.pow(10, 6 - idLikeLength);
+        const end = (start + 1) * multiplier - 1;
+
+        queryBuilder.whereBetween(this.columnName(this.idColumn), [start, end]);
       } else {
-          console.warn('Invalid idLike value:', filter.idLike);
+        console.warn('Invalid idLike value:', filter.idLike);
       }
-  }
+    }
     if (canExactMatch(min)) {
       queryBuilder.where(this.columnName(this.idColumn), '>=', min ? min : null);
     }
