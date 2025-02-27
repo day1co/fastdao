@@ -31,6 +31,7 @@ export interface CrudFilter<ID extends IdType = number, ROW extends RowType = Ro
   offset?: number;
   limit?: number;
   projection?: Array<string>;
+  idLike?: string;
 }
 
 export interface CrudOperationsOpts<ID extends IdType = number, ROW extends RowType = RowType> {
@@ -239,7 +240,8 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
     if (!filter) {
       return;
     }
-    const { exclude, include, contain, leftContain, rightContain, fullContain, min, max, since, until } = filter;
+    const { exclude, include, contain, leftContain, rightContain, fullContain, min, max, since, until, idLike } =
+      filter;
     if (exclude) {
       for (const [key, value] of Object.entries(exclude)) {
         if (canExactMatch(value)) {
@@ -290,6 +292,9 @@ export class CrudOperations<ID extends IdType = number, ROW extends RowType = Ro
           queryBuilder.where(this.columnName(key), 'like', `${value}%`);
         }
       }
+    }
+    if (idLike) {
+      queryBuilder.whereRaw('CAST(?? AS CHAR) LIKE ?', [this.columnName(this.idColumn), `${idLike}%`]);
     }
     if (canExactMatch(min)) {
       queryBuilder.where(this.columnName(this.idColumn), '>=', min ? min : null);
